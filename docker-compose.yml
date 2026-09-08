@@ -1,0 +1,10 @@
+services:
+  crash-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: crash-dashboard:latest
+    container_name: crash_dashboard_local
+    ports:
+      - "8080:80"
+    restart: always
