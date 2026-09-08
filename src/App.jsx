@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Chart from 'react-apexcharts';
 import {
   ShieldCheck,
@@ -22,7 +22,9 @@ import {
   FileCheck2,
   Database,
   Sparkles,
-  X
+  X,
+  MousePointerClick,
+  Filter
 } from 'lucide-react';
 
 // นำเข้าข้อมูลโดยตรงจาก ./data/dashboard_data.json ตามข้อกำหนด
@@ -127,7 +129,7 @@ const FALLBACK_DATA = {
 const appData = dataFromJson || FALLBACK_DATA;
 
 // ════════════════ ⚡ ULTRA-FAST COUNT-UP HOOK (60 FPS) ════════════════
-function useCountUp(target, duration = 1200, decimals = 0) {
+function useCountUp(target, duration = 1100, decimals = 0) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -139,7 +141,6 @@ function useCountUp(target, duration = 1200, decimals = 0) {
     const step = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      // easeOutExpo for energetic and smooth acceleration-deceleration
       const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
       const current = startVal + (targetVal - startVal) * ease;
       setCount(current);
@@ -164,10 +165,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [currentTime, setCurrentTime] = useState('');
 
-  // ฟิลเตอร์ข้อมูล
+  // ฟิลเตอร์ข้อมูลแบบ Manual
   const [severityFilter, setSeverityFilter] = useState('');
   const [roadSearch, setRoadSearch] = useState('');
   const [faultFilter, setFaultFilter] = useState('');
+
+  // 🎯 CROSS-CHART INTERACTIVE FILTER STATE
+  const [activeChartFilter, setActiveChartFilter] = useState(null);
 
   // นาฬิกาเรียลไทม์
   useEffect(() => {
@@ -180,23 +184,62 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // กรองข้อมูลในตารางแบบ Optimized Memoization
+  // 🎯 Cross-Chart Filter Toggle Callback
+  const handleChartFilterToggle = (filterObj) => {
+    if (activeChartFilter && activeChartFilter.type === filterObj.type && activeChartFilter.value === filterObj.value) {
+      setActiveChartFilter(null);
+    } else {
+      setActiveChartFilter(filterObj);
+      // Smooth scroll ลงมายังส่วนตารางข้อมูล
+      const tableEl = document.getElementById('interactive-explorer-section');
+      if (tableEl) {
+        tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
+
+  // กรองข้อมูลในตารางแบบ Optimized Memoization (รวมทั้ง Cross-Chart Filters)
   const filteredIncidents = useMemo(() => {
     const list = appData.incidents || [];
     const searchLower = roadSearch.trim().toLowerCase();
 
     return list.filter(item => {
+      // 1. Dropdown Severity
       if (severityFilter && item.injury_severity !== severityFilter) return false;
+
+      // 2. Dropdown Driver At Fault
       if (faultFilter && item.driver_at_fault !== faultFilter) return false;
+
+      // 3. Search Road
       if (searchLower && !item.road.toLowerCase().includes(searchLower)) return false;
+
+      // 4. Cross-Chart Interactive Filter
+      if (activeChartFilter) {
+        if (activeChartFilter.type === 'collision') {
+          if (item.collision_type !== activeChartFilter.value) return false;
+        } else if (activeChartFilter.type === 'road') {
+          if (!item.road.toLowerCase().includes(activeChartFilter.value.toLowerCase())) return false;
+        } else if (activeChartFilter.type === 'speed') {
+          const spd = item.speed_limit;
+          if (activeChartFilter.value === '≤25 mph' && spd > 25) return false;
+          if (activeChartFilter.value === '26–35 mph' && (spd < 26 || spd > 35)) return false;
+          if (activeChartFilter.value === '36–45 mph' && (spd < 36 || spd > 45)) return false;
+          if (activeChartFilter.value === '>45 mph' && spd <= 45) return false;
+        } else if (activeChartFilter.type === 'hour') {
+          const hourStr = item.datetime ? item.datetime.split(' ')[1]?.split(':')[0] : '';
+          if (hourStr !== activeChartFilter.value) return false;
+        }
+      }
+
       return true;
     });
-  }, [severityFilter, roadSearch, faultFilter]);
+  }, [severityFilter, roadSearch, faultFilter, activeChartFilter]);
 
   const handleResetFilters = () => {
     setSeverityFilter('');
     setRoadSearch('');
     setFaultFilter('');
+    setActiveChartFilter(null);
   };
 
   const handleExportCSV = () => {
@@ -249,22 +292,31 @@ export default function App() {
             {/* 4. การ์ดสรุปตัวชี้วัดหลัก 4 ใบ (Overview KPI Cards) */}
             <OverviewKpis summary={appData.summary} />
 
-            {/* 5. ส่วนแสดงผลกราฟิกและกล่องสรุป 3 จังหวะ (Visualizations & Insights) */}
-            <VisualizationsSection appData={appData} />
+            {/* 5. ส่วนแสดงผลกราฟิกและกล่องสรุป 3 จังหวะ พร้อม Cross-Chart Interactive Filtering */}
+            <VisualizationsSection
+              appData={appData}
+              activeChartFilter={activeChartFilter}
+              onSelectChartFilter={handleChartFilterToggle}
+            />
 
             {/* 6. ตัวกรองและการเจาะลึกข้อมูลรายคดี (Interactive Explorer & Filters) */}
-            <InteractiveExplorer
-              filteredIncidents={filteredIncidents}
-              totalCount={appData.incidents?.length || 0}
-              severityFilter={severityFilter}
-              setSeverityFilter={setSeverityFilter}
-              roadSearch={roadSearch}
-              setRoadSearch={setRoadSearch}
-              faultFilter={faultFilter}
-              setFaultFilter={setFaultFilter}
-              onResetFilters={handleResetFilters}
-              onExportCSV={handleExportCSV}
-            />
+            <div id="interactive-explorer-section">
+              <InteractiveExplorer
+                filteredIncidents={filteredIncidents}
+                totalCount={appData.incidents?.length || 0}
+                severityFilter={severityFilter}
+                setSeverityFilter={setSeverityFilter}
+                roadSearch={roadSearch}
+                setRoadSearch={setRoadSearch}
+                faultFilter={faultFilter}
+                setFaultFilter={setFaultFilter}
+                activeChartFilter={activeChartFilter}
+                onClearChartFilter={() => setActiveChartFilter(null)}
+                onSelectChartFilter={handleChartFilterToggle}
+                onResetFilters={handleResetFilters}
+                onExportCSV={handleExportCSV}
+              />
+            </div>
           </div>
         ) : (
           /* 7. แท็บร่องรอยการตรวจสอบ (Data Audit & Reconciliation Tab) */
@@ -324,7 +376,6 @@ function JudgeLoginModal({ onLoginSuccess }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center login-bg-pattern p-4 overflow-hidden">
-      {/* Ambient Floating Glow Orbs for Luxury Look */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-float-slow pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-float-reverse pointer-events-none"></div>
 
@@ -382,7 +433,6 @@ function JudgeLoginModal({ onLoginSuccess }) {
             </div>
           </div>
 
-          {/* แจ้งเตือนข้อผิดพลาดเมื่อกรอกผิด */}
           {errorMsg && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-medium flex items-center gap-2 animate-fade-in shadow-xs">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
@@ -427,7 +477,6 @@ function Header({ currentTime, onLogout }) {
   return (
     <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200 shadow-xs no-print transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Title & Logo */}
         <div className="flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center shadow-md text-white transition hover:scale-105">
             <Car className="w-5 h-5" />
@@ -442,27 +491,22 @@ function Header({ currentTime, onLogout }) {
           </div>
         </div>
 
-        {/* Right Side Stats & Logout */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Live Indicator */}
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold shadow-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
             <span>Live System</span>
           </div>
 
-          {/* Clock */}
           <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100/90 px-3 py-1 rounded-full font-mono border border-slate-200 shadow-xs">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
             <span>{currentTime || '00:00:00'}</span>
           </div>
 
-          {/* Judge Badge */}
           <div className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
             <User className="w-3.5 h-3.5 text-slate-500" />
             <span>กรรมการผู้ตัดสิน (Judge)</span>
           </div>
 
-          {/* Logout Button */}
           <button
             onClick={onLogout}
             className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-rose-200 transition duration-150 active:scale-95 shadow-xs"
@@ -483,7 +527,6 @@ function TraceabilityBar() {
     <div className="bg-white border-b border-slate-200/80 no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          {/* Audit Badge with green pulse animation */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200 shadow-xs hover:bg-slate-150 transition">
             <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
             <span>194,719 Records (109,684 Incidents) | Pipeline v1.0 Audited</span>
@@ -560,7 +603,7 @@ function OverviewKpis({ summary }) {
           <span className="w-2 h-2 rounded-full bg-slate-400"></span>
           ตัวชี้วัดหลักเชิงยุทธศาสตร์ (Key Performance Indicators)
         </h2>
-        <span className="text-xs text-slate-400">ระบบประมวลผลความเร็วสูง (Hardware Accelerated)</span>
+        <span className="text-xs text-slate-400 font-mono">Real-time Verified Metrics</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -656,25 +699,39 @@ function OverviewKpis({ summary }) {
   );
 }
 
-// ════════════════ 5. VISUALIZATIONS & 3-BEAT INSIGHT BOXES (เกณฑ์ 3.5.3.1, 3.5.3.2) ════════════════
-function VisualizationsSection({ appData }) {
-  // Chart Animation Options สำหรับความลื่นไหลระดับสูง
+// ════════════════ 5. VISUALIZATIONS SECTION (หลักการ DATA VISUALIZATION + CROSS-CHART FILTERING) ════════════════
+function VisualizationsSection({ appData, activeChartFilter, onSelectChartFilter }) {
   const baseChartAnimations = {
     enabled: true,
     easing: 'easeinout',
-    speed: 700,
-    animateGradually: { enabled: true, delay: 120 },
-    dynamicAnimation: { enabled: true, speed: 300 }
+    speed: 650,
+    animateGradually: { enabled: true, delay: 100 },
+    dynamicAnimation: { enabled: true, speed: 250 }
   };
 
-  // Chart 1: Smooth Area Chart (Hourly Trend)
+  // ──────── Chart 1: Hourly Trend (Area Chart) ────────
+  // หลักการ: Baseline Y=0, Curve เรียบเนียน, มี Highlight และ Annotation จุดพีค 17:00
   const hourlyChartOptions = {
     chart: {
       type: 'area',
-      height: 270,
+      height: 290,
       toolbar: { show: false },
       fontFamily: 'Sarabun, Inter, sans-serif',
-      animations: baseChartAnimations
+      animations: baseChartAnimations,
+      events: {
+        dataPointSelection: (event, chartContext, config) => {
+          const idx = config.dataPointIndex;
+          if (idx >= 0 && idx < appData.hourly_trend.labels.length) {
+            const label = appData.hourly_trend.labels[idx];
+            const hour = label.split(':')[0];
+            onSelectChartFilter({
+              type: 'hour',
+              label: `ชั่วโมง ${label} น. (${appData.hourly_trend.values[idx]?.toLocaleString()} ครั้ง)`,
+              value: hour
+            });
+          }
+        }
+      }
     },
     stroke: { curve: 'smooth', width: 2.5 },
     colors: ['#334155'],
@@ -682,9 +739,9 @@ function VisualizationsSection({ appData }) {
       type: 'gradient',
       gradient: {
         shadeIntensity: 1,
-        opacityFrom: 0.45,
+        opacityFrom: 0.5,
         opacityTo: 0.05,
-        stops: [0, 95, 100]
+        stops: [0, 90, 100]
       }
     },
     xaxis: {
@@ -694,41 +751,100 @@ function VisualizationsSection({ appData }) {
       axisTicks: { show: false }
     },
     yaxis: {
+      min: 0,
+      max: 18000,
       labels: {
         formatter: (val) => val.toLocaleString(),
         style: { fontSize: '11px', colors: '#64748b' }
       }
     },
+    annotations: {
+      xaxis: [
+        {
+          x: '15:00',
+          x2: '17:00',
+          fillColor: '#f1f5f9',
+          opacity: 0.6,
+          label: {
+            borderColor: '#cbd5e1',
+            style: { fontSize: '10px', color: '#475569', background: '#f8fafc' },
+            text: 'ช่วงพีควิกฤต (15:00-17:00)'
+          }
+        }
+      ],
+      points: [
+        {
+          x: '17:00',
+          y: 15636,
+          marker: {
+            size: 6,
+            fillColor: '#e11d48',
+            strokeColor: '#fff',
+            strokeWidth: 2
+          },
+          label: {
+            borderColor: '#e11d48',
+            offsetY: -8,
+            style: {
+              color: '#fff',
+              background: '#e11d48',
+              fontSize: '10px',
+              fontWeight: 700
+            },
+            text: 'พีคสูงสุด 15,636 ครั้ง'
+          }
+        }
+      ]
+    },
     dataLabels: { enabled: false },
     grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
-    tooltip: { y: { formatter: (val) => `${val.toLocaleString()} ครั้ง` } }
+    tooltip: {
+      y: { formatter: (val) => `${val.toLocaleString()} ครั้ง (คลิกเพื่อกรอง)` }
+    }
   };
 
   const hourlyChartSeries = [{
-    name: 'จำนวนครั้งที่เกิดอุบัติเหตุ',
+    name: 'จำนวนอุบัติเหตุ',
     data: appData.hourly_trend.values
   }];
 
-  // Chart 2: Horizontal Bar Chart (Collision Types)
+  // ──────── Chart 2: Top 5 Collision Types (Horizontal Bar Chart) ────────
+  // หลักการ: เรียงลำดับจากมากสุดไว้ด้านบน (Descending), แถบแนวนอนอ่านชื่อง่าย ไม่เอียงคอ
   const collisionChartOptions = {
     chart: {
       type: 'bar',
-      height: 270,
+      height: 290,
       toolbar: { show: false },
       fontFamily: 'Sarabun, Inter, sans-serif',
-      animations: baseChartAnimations
+      animations: baseChartAnimations,
+      events: {
+        dataPointSelection: (event, chartContext, config) => {
+          const idx = config.dataPointIndex;
+          if (idx >= 0 && idx < appData.collision_types.length) {
+            const item = appData.collision_types[idx];
+            onSelectChartFilter({
+              type: 'collision',
+              label: `ประเภท: ${item.type}`,
+              value: item.type
+            });
+          }
+        }
+      }
     },
     plotOptions: {
       bar: {
         horizontal: true,
         borderRadius: 6,
-        barHeight: '62%'
+        barHeight: '62%',
+        distributed: true
       }
     },
-    colors: ['#475569'],
+    // ไฮไลต์อันดับ 1 (Same Dir Rear End) ด้วยสีเข้มเด่นชัด
+    colors: ['#1e293b', '#475569', '#64748b', '#94a3b8', '#cbd5e1'],
+    legend: { show: false },
     dataLabels: {
       enabled: true,
-      formatter: (val) => val.toLocaleString(),
+      formatter: (val) => `${val.toLocaleString()} ครั้ง`,
       style: { fontSize: '11px', colors: ['#fff'], fontWeight: 600 }
     },
     xaxis: {
@@ -741,11 +857,14 @@ function VisualizationsSection({ appData }) {
     },
     yaxis: {
       labels: {
-        style: { fontSize: '11px', colors: '#334155', fontWeight: 600 },
-        maxWidth: 180
+        style: { fontSize: '11px', colors: '#1e293b', fontWeight: 600 },
+        maxWidth: 170
       }
     },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 }
+    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+    tooltip: {
+      y: { formatter: (val) => `${val.toLocaleString()} ครั้ง (คลิกเพื่อกรอง)` }
+    }
   };
 
   const collisionChartSeries = [{
@@ -753,43 +872,62 @@ function VisualizationsSection({ appData }) {
     data: appData.collision_types.map(c => c.count)
   }];
 
-  // Chart 3: Column Chart (Speed vs Severity)
+  // ──────── Chart 3: Speed vs Severity Rate (Column Chart) ────────
+  // หลักการ: เริ่มต้น Y=0 เสมอ, แสดง % ชัดเจนบนแท่ง, ใช้สีสื่อระดับความอันตราย (Color Risk Coding)
   const speedChartOptions = {
     chart: {
       type: 'bar',
-      height: 270,
+      height: 290,
       toolbar: { show: false },
       fontFamily: 'Sarabun, Inter, sans-serif',
-      animations: baseChartAnimations
+      animations: baseChartAnimations,
+      events: {
+        dataPointSelection: (event, chartContext, config) => {
+          const idx = config.dataPointIndex;
+          if (idx >= 0 && idx < appData.speed_severity.length) {
+            const item = appData.speed_severity[idx];
+            onSelectChartFilter({
+              type: 'speed',
+              label: `จำกัดความเร็ว: ${item.bracket} (อันตราย ${item.rate}%)`,
+              value: item.bracket
+            });
+          }
+        }
+      }
     },
     plotOptions: {
       bar: {
         borderRadius: 6,
-        columnWidth: '45%',
+        columnWidth: '46%',
         distributed: true
       }
     },
-    colors: ['#94a3b8', '#64748b', '#475569', '#e11d48'],
+    colors: ['#94a3b8', '#64748b', '#f59e0b', '#e11d48'],
     dataLabels: {
       enabled: true,
       formatter: (val) => `${val}%`,
-      offsetY: -20,
-      style: { fontSize: '11px', colors: ['#334155'], fontWeight: 700 }
+      offsetY: -22,
+      style: { fontSize: '12px', colors: ['#0f172a'], fontWeight: 700 }
     },
     legend: { show: false },
     xaxis: {
       categories: appData.speed_severity.map(s => s.bracket),
-      labels: { style: { fontSize: '12px', colors: '#64748b', fontWeight: 600 } },
+      labels: { style: { fontSize: '12px', colors: '#475569', fontWeight: 600 } },
       axisBorder: { show: false }
     },
     yaxis: {
+      min: 0,
+      max: 2.2,
       title: { text: 'อัตราเคสสาหัส (%)', style: { fontSize: '11px', color: '#64748b' } },
       labels: {
-        formatter: (val) => `${val}%`,
+        formatter: (val) => `${val.toFixed(1)}%`,
         style: { fontSize: '11px', colors: '#64748b' }
       }
     },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 }
+    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+    tooltip: {
+      y: { formatter: (val) => `${val}% ของเคส (คลิกเพื่อกรอง)` }
+    }
   };
 
   const speedChartSeries = [{
@@ -797,23 +935,39 @@ function VisualizationsSection({ appData }) {
     data: appData.speed_severity.map(s => s.rate)
   }];
 
-  // Chart 4: Horizontal Bar Chart (Top Roads)
+  // ──────── Chart 4: Top 5 High-Crash Corridors (Horizontal Bar) ────────
+  // หลักการ: เรียงลำดับจากถนนเกิดเหตุสูงสุด (Georgia Ave) ไว้บนสุด, ไฮไลต์ชัดเจน
   const roadsChartOptions = {
     chart: {
       type: 'bar',
-      height: 270,
+      height: 290,
       toolbar: { show: false },
       fontFamily: 'Sarabun, Inter, sans-serif',
-      animations: baseChartAnimations
+      animations: baseChartAnimations,
+      events: {
+        dataPointSelection: (event, chartContext, config) => {
+          const idx = config.dataPointIndex;
+          if (idx >= 0 && idx < appData.top_roads.length) {
+            const item = appData.top_roads[idx];
+            onSelectChartFilter({
+              type: 'road',
+              label: `ถนน: ${item.road}`,
+              value: item.road
+            });
+          }
+        }
+      }
     },
     plotOptions: {
       bar: {
         horizontal: true,
         borderRadius: 6,
-        barHeight: '62%'
+        barHeight: '62%',
+        distributed: true
       }
     },
-    colors: ['#334155'],
+    colors: ['#0f172a', '#334155', '#475569', '#64748b', '#94a3b8'],
+    legend: { show: false },
     dataLabels: {
       enabled: true,
       formatter: (val) => `${val.toLocaleString()} เคส`,
@@ -828,11 +982,14 @@ function VisualizationsSection({ appData }) {
     },
     yaxis: {
       labels: {
-        style: { fontSize: '11px', colors: '#334155', fontWeight: 600 },
+        style: { fontSize: '11px', colors: '#1e293b', fontWeight: 600 },
         maxWidth: 160
       }
     },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 }
+    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+    tooltip: {
+      y: { formatter: (val) => `${val.toLocaleString()} เคส (คลิกเพื่อกรอง)` }
+    }
   };
 
   const roadsChartSeries = [{
@@ -842,12 +999,21 @@ function VisualizationsSection({ appData }) {
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-          การวิเคราะห์ภาพรวมข้อมูลเชิงลึก (Deep Dive Visualizations)
-        </h2>
-        <span className="text-xs text-slate-400">ApexCharts Enterprise Responsive Charts</span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+            การวิเคราะห์ภาพรวมข้อมูลเชิงลึก (Deep Dive Visualizations)
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            ตามหลักสถิติศาสตร์ & ธรรมาภิบาลข้อมูล (Data Visualization Best Practices)
+          </p>
+        </div>
+
+        <div className="inline-flex items-center gap-1.5 text-xs text-indigo-700 bg-indigo-50/80 px-3 py-1 rounded-full border border-indigo-200">
+          <MousePointerClick className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
+          <span>คลิกที่แท่งหรือจุดบนกราฟเพื่อกรองข้อมูลในตารางทันที (Cross-Filter)</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -859,9 +1025,11 @@ function VisualizationsSection({ appData }) {
                 <span className="w-2 h-2 rounded-full bg-slate-600"></span>
                 แนวโน้มอุบัติเหตุรายชั่วโมง (Hourly Accident Trend)
               </h3>
-              <span className="text-xs text-slate-400 font-mono">00:00 - 23:00</span>
+              <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md">
+                00:00 - 23:00 (Y-axis min=0)
+              </span>
             </div>
-            <Chart options={hourlyChartOptions} series={hourlyChartSeries} type="area" height={260} />
+            <Chart options={hourlyChartOptions} series={hourlyChartSeries} type="area" height={280} />
           </div>
 
           <InsightBox
@@ -879,9 +1047,11 @@ function VisualizationsSection({ appData }) {
                 <span className="w-2 h-2 rounded-full bg-slate-600"></span>
                 รูปแบบการชน 5 อันดับแรก (Top 5 Collision Types)
               </h3>
-              <span className="text-xs text-slate-400 font-mono">55,758 ชนท้ายสูงสุด</span>
+              <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100">
+                ชนท้ายครองอันดับ 1
+              </span>
             </div>
-            <Chart options={collisionChartOptions} series={collisionChartSeries} type="bar" height={260} />
+            <Chart options={collisionChartOptions} series={collisionChartSeries} type="bar" height={280} />
           </div>
 
           <InsightBox
@@ -899,9 +1069,11 @@ function VisualizationsSection({ appData }) {
                 <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                 อัตราเคสสาหัส/เสียชีวิตตามช่วงความเร็ว (Speed vs Severity Rate)
               </h3>
-              <span className="text-xs text-rose-600 font-semibold">&gt;45 mph วิกฤตสุด</span>
+              <span className="text-[11px] font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-100">
+                &gt;45 mph วิกฤต 1.77%
+              </span>
             </div>
-            <Chart options={speedChartOptions} series={speedChartSeries} type="bar" height={260} />
+            <Chart options={speedChartOptions} series={speedChartSeries} type="bar" height={280} />
           </div>
 
           <InsightBox
@@ -919,9 +1091,11 @@ function VisualizationsSection({ appData }) {
                 <span className="w-2 h-2 rounded-full bg-slate-600"></span>
                 5 ถนนเกิดเหตุสะสมสูงสุด (Top 5 Crash Corridors)
               </h3>
-              <span className="text-xs text-slate-400 font-mono">Georgia Ave สูงสุด</span>
+              <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md">
+                Georgia Ave แชมป์ 4,218 เคส
+              </span>
             </div>
-            <Chart options={roadsChartOptions} series={roadsChartSeries} type="bar" height={260} />
+            <Chart options={roadsChartOptions} series={roadsChartSeries} type="bar" height={280} />
           </div>
 
           <InsightBox
@@ -979,6 +1153,9 @@ function InteractiveExplorer({
   setRoadSearch,
   faultFilter,
   setFaultFilter,
+  activeChartFilter,
+  onClearChartFilter,
+  onSelectChartFilter,
   onResetFilters,
   onExportCSV
 }) {
@@ -991,7 +1168,7 @@ function InteractiveExplorer({
             สำรวจข้อมูลเชิงลึกรายคดี (Interactive Explorer & Filters)
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            กรองข้อมูลแบบ Multi-criteria พร้อมระบบแปลงและดาวน์โหลดรายงาน
+            ระบบตัวกรองอัจฉริยะ (Cross-Chart Filtering & Real-time Criteria)
           </p>
         </div>
 
@@ -1000,9 +1177,95 @@ function InteractiveExplorer({
         </div>
       </div>
 
+      {/* 🎯 แถบแสดงสถานะ Cross-Chart Filter ที่กำลังเปิดใช้งาน */}
+      {activeChartFilter && (
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-indigo-50 via-sky-50 to-indigo-50 border border-indigo-200 text-indigo-900 text-xs px-4 py-2.5 rounded-2xl animate-fade-in shadow-xs">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-600 animate-pulse" />
+            <span>
+              กำลังกรองข้อมูลจากการคลิกบนกราฟ: <strong className="font-bold underline">{activeChartFilter.label}</strong>
+            </span>
+          </div>
+          <button
+            onClick={onClearChartFilter}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-bold transition duration-150 active:scale-95 shadow-xs"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>ล้างตัวกรองนี้</span>
+          </button>
+        </div>
+      )}
+
+      {/* ⚡ Quick Preset Filter Chips */}
+      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+        <span className="text-slate-400 font-semibold flex items-center gap-1">
+          <Filter className="w-3 h-3 text-slate-400" />
+          วิเคราะห์ด่วน:
+        </span>
+
+        <button
+          type="button"
+          onClick={() => setSeverityFilter('Fatal Injury')}
+          className={`px-3 py-1 rounded-full border transition font-medium ${
+            severityFilter === 'Fatal Injury'
+              ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          🚨 เคสเสียชีวิต (Fatal)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onSelectChartFilter({ type: 'collision', label: 'ชนท้าย (Same Dir Rear End)', value: 'Same Direction Rear End' })}
+          className={`px-3 py-1 rounded-full border transition font-medium ${
+            activeChartFilter?.value === 'Same Direction Rear End'
+              ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          🚗 ชนท้ายอันดับ 1 (Rear End)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onSelectChartFilter({ type: 'road', label: 'ถนน Georgia Ave', value: 'Georgia Ave' })}
+          className={`px-3 py-1 rounded-full border transition font-medium ${
+            activeChartFilter?.value === 'Georgia Ave'
+              ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          📍 ถนน Georgia Ave
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onSelectChartFilter({ type: 'speed', label: 'ความเร็ว >45 mph', value: '>45 mph' })}
+          className={`px-3 py-1 rounded-full border transition font-medium ${
+            activeChartFilter?.value === '>45 mph'
+              ? 'bg-rose-700 text-white border-rose-700 shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          ⚡ ความเร็วสูง &gt;45 mph
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setFaultFilter('Yes')}
+          className={`px-3 py-1 rounded-full border transition font-medium ${
+            faultFilter === 'Yes'
+              ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          ⚠️ ฝ่ายผิด (Driver At Fault)
+        </button>
+      </div>
+
       {/* แถบตัวกรอง (Filter Bar) */}
       <div className="bg-slate-50/90 rounded-2xl p-4 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
-        {/* Dropdown เลือกระดับความรุนแรง */}
         <div>
           <label className="block text-xs font-bold text-slate-600 mb-1.5">
             ระดับความรุนแรง (Injury Severity)
@@ -1021,7 +1284,6 @@ function InteractiveExplorer({
           </select>
         </div>
 
-        {/* ช่อง Input พิมพ์ค้นหาชื่อถนน */}
         <div>
           <label className="block text-xs font-bold text-slate-600 mb-1.5">
             ค้นหาชื่อถนน (Road Search)
@@ -1047,7 +1309,6 @@ function InteractiveExplorer({
           </div>
         </div>
 
-        {/* Dropdown เลือกฝ่ายที่กระทำผิด */}
         <div>
           <label className="block text-xs font-bold text-slate-600 mb-1.5">
             ฝ่ายที่กระทำผิด (Driver At Fault)
@@ -1063,7 +1324,6 @@ function InteractiveExplorer({
           </select>
         </div>
 
-        {/* ปุ่มรีเซ็ตตัวกรอง + ส่งออก CSV */}
         <div className="flex gap-2">
           <button
             type="button"
@@ -1072,7 +1332,7 @@ function InteractiveExplorer({
             title="คืนค่าตัวกรองทั้งหมด"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-            <span>รีเซ็ต</span>
+            <span>รีเซ็ตตัวกรอง</span>
           </button>
 
           <button
@@ -1190,7 +1450,6 @@ function InteractiveExplorer({
 function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
   return (
     <section className="space-y-8 animate-fade-in">
-      {/* Overview Banner */}
       <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 card-lift">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-800 text-emerald-400 text-xs font-semibold mb-2 border border-slate-700">
@@ -1205,7 +1464,7 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
           </p>
         </div>
 
-        <div className="flex gap-4 border-l border-slate-750 pl-6 text-center">
+        <div className="flex gap-4 border-l border-slate-700 pl-6 text-center">
           <div>
             <p className="text-xs text-slate-400 uppercase tracking-wider">สูญเสียข้อมูล</p>
             <p className="text-xl font-extrabold text-emerald-400 tabular-nums">0.87%</p>
