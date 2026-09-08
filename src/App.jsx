@@ -47,82 +47,82 @@ const FALLBACK_DATA = {
   },
   hourly_trend: {
     labels: ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"],
-    values: [2150, 1380, 1050, 820, 780, 1250, 3450, 6280, 6850, 4620, 3980, 4350, 5480, 5120, 6380, 7920, 8540, 15636, 7280, 5450, 3980, 3150, 2580, 2100]
+    values: [2150, 1380, 1050, 820, 780, 1250, 4850, 9420, 11871, 7620, 6980, 7850, 8980, 8620, 9980, 12840, 15256, 15636, 11480, 8450, 6180, 4850, 3680, 2600]
   },
   collision_types: [
-    { type: "Same Direction Rear End", count: 34521 },
-    { type: "Angle Meets Left Turn", count: 14832 },
-    { type: "Same Direction Sideswipe", count: 11267 },
-    { type: "Head On Left Turn", count: 8456 },
-    { type: "Single Vehicle", count: 7123 }
+    { type: "Same Direction Rear End", count: 55758 },
+    { type: "Straight Movement Angle", count: 30340 },
+    { type: "Other", count: 20531 },
+    { type: "Single Vehicle", count: 18471 },
+    { type: "Same Direction Sideswipe", count: 16227 }
   ],
   speed_severity: [
-    { bracket: "≤25 mph", rate: 0.45, count: 42150, severe: 190 },
-    { bracket: "26–35 mph", rate: 0.82, count: 35280, severe: 289 },
-    { bracket: "36–45 mph", rate: 1.15, count: 22840, severe: 263 },
+    { bracket: "≤25 mph", rate: 0.44, count: 42150, severe: 185 },
+    { bracket: "26–35 mph", rate: 0.86, count: 35280, severe: 303 },
+    { bracket: "36–45 mph", rate: 1.29, count: 22840, severe: 295 },
     { bracket: ">45 mph", rate: 1.77, count: 9414, severe: 167 }
   ],
   top_roads: [
-    { road: "Georgia Ave", count: 4218 },
-    { road: "New Hampshire Ave", count: 3156 },
-    { road: "Frederick Rd", count: 2834 },
-    { road: "Rockville Pike", count: 2612 },
-    { road: "University Blvd", count: 2447 }
+    { road: "Georgia Ave", count: 11384 },
+    { road: "New Hampshire Ave", count: 7174 },
+    { road: "Frederick Rd", count: 6031 },
+    { road: "Rockville Pike", count: 5081 },
+    { road: "Connecticut Ave", count: 4373 }
   ],
   incidents: [
     { report_number: "MCP2024001234", datetime: "2024-03-15 17:23", road: "Georgia Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "Yes" },
-    { report_number: "MCP2024001891", datetime: "2024-04-02 08:14", road: "Rockville Pike", collision_type: "Angle Meets Left Turn", injury_severity: "Suspected Minor Injury", speed_limit: 40, driver_at_fault: "Yes" },
+    { report_number: "MCP2024001891", datetime: "2024-04-02 08:14", road: "Rockville Pike", collision_type: "Straight Movement Angle", injury_severity: "Suspected Minor Injury", speed_limit: 40, driver_at_fault: "Yes" },
     { report_number: "MCP2024002456", datetime: "2024-05-18 16:45", road: "New Hampshire Ave", collision_type: "Same Direction Sideswipe", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "No" },
     { report_number: "MCP2024003102", datetime: "2024-06-22 23:10", road: "Frederick Rd", collision_type: "Single Vehicle", injury_severity: "Suspected Serious Injury", speed_limit: 50, driver_at_fault: "Yes" },
-    { report_number: "MCP2024003789", datetime: "2024-07-04 14:32", road: "University Blvd", collision_type: "Head On Left Turn", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2024003789", datetime: "2024-07-04 14:32", road: "Connecticut Ave", collision_type: "Other", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "Yes" },
     { report_number: "MCP2024004215", datetime: "2024-08-11 07:56", road: "Connecticut Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "No" },
-    { report_number: "MCP2024004678", datetime: "2024-09-03 18:28", road: "Veirs Mill Rd", collision_type: "Angle Meets Left Turn", injury_severity: "Suspected Minor Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2024004678", datetime: "2024-09-03 18:28", road: "Georgia Ave", collision_type: "Straight Movement Angle", injury_severity: "Suspected Minor Injury", speed_limit: 35, driver_at_fault: "Yes" },
     { report_number: "MCP2024005034", datetime: "2024-10-19 12:05", road: "Georgia Ave", collision_type: "Same Direction Rear End", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "Yes" },
-    { report_number: "MCP2024005421", datetime: "2024-11-25 02:45", road: "Colesville Rd", collision_type: "Single Vehicle", injury_severity: "Fatal Injury", speed_limit: 45, driver_at_fault: "Yes" },
-    { report_number: "MCP2024005890", datetime: "2024-12-08 15:18", road: "Old Georgetown Rd", collision_type: "Same Direction Sideswipe", injury_severity: "No Apparent Injury", speed_limit: 40, driver_at_fault: "No" },
-    { report_number: "MCP2023006234", datetime: "2023-01-14 09:30", road: "River Rd", collision_type: "Head On Left Turn", injury_severity: "Suspected Minor Injury", speed_limit: 40, driver_at_fault: "Yes" },
+    { report_number: "MCP2024005421", datetime: "2024-11-25 02:45", road: "New Hampshire Ave", collision_type: "Single Vehicle", injury_severity: "Fatal Injury", speed_limit: 50, driver_at_fault: "Yes" },
+    { report_number: "MCP2024005890", datetime: "2024-12-08 15:18", road: "Frederick Rd", collision_type: "Same Direction Sideswipe", injury_severity: "No Apparent Injury", speed_limit: 40, driver_at_fault: "No" },
+    { report_number: "MCP2023006234", datetime: "2023-01-14 09:30", road: "Rockville Pike", collision_type: "Other", injury_severity: "Suspected Minor Injury", speed_limit: 40, driver_at_fault: "Yes" },
     { report_number: "MCP2023006701", datetime: "2023-02-20 17:50", road: "Georgia Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "Yes" },
-    { report_number: "MCP2023007188", datetime: "2023-03-08 11:22", road: "Rockville Pike", collision_type: "Angle Meets Left Turn", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "No" },
+    { report_number: "MCP2023007188", datetime: "2023-03-08 11:22", road: "Rockville Pike", collision_type: "Straight Movement Angle", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "No" },
     { report_number: "MCP2023007654", datetime: "2023-04-15 20:15", road: "New Hampshire Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "Yes" },
     { report_number: "MCP2023008120", datetime: "2023-05-30 06:40", road: "Frederick Rd", collision_type: "Single Vehicle", injury_severity: "Suspected Serious Injury", speed_limit: 55, driver_at_fault: "Yes" },
-    { report_number: "MCP2023008567", datetime: "2023-06-12 13:55", road: "University Blvd", collision_type: "Same Direction Sideswipe", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "No" },
-    { report_number: "MCP2023009034", datetime: "2023-07-24 16:10", road: "Connecticut Ave", collision_type: "Angle Meets Left Turn", injury_severity: "Suspected Minor Injury", speed_limit: 35, driver_at_fault: "Yes" },
-    { report_number: "MCP2023009501", datetime: "2023-08-05 22:35", road: "Veirs Mill Rd", collision_type: "Head On Left Turn", injury_severity: "Possible Injury", speed_limit: 40, driver_at_fault: "Yes" },
+    { report_number: "MCP2023008567", datetime: "2023-06-12 13:55", road: "Connecticut Ave", collision_type: "Same Direction Sideswipe", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "No" },
+    { report_number: "MCP2023009034", datetime: "2023-07-24 16:10", road: "Connecticut Ave", collision_type: "Straight Movement Angle", injury_severity: "Suspected Minor Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2023009501", datetime: "2023-08-05 22:35", road: "Georgia Ave", collision_type: "Other", injury_severity: "Possible Injury", speed_limit: 40, driver_at_fault: "Yes" },
     { report_number: "MCP2023009968", datetime: "2023-09-18 10:48", road: "Georgia Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "Yes" },
-    { report_number: "MCP2023010435", datetime: "2023-10-31 01:20", road: "Colesville Rd", collision_type: "Single Vehicle", injury_severity: "Suspected Minor Injury", speed_limit: 45, driver_at_fault: "Yes" },
-    { report_number: "MCP2022010902", datetime: "2022-01-07 08:05", road: "Old Georgetown Rd", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "No" },
-    { report_number: "MCP2022011369", datetime: "2022-02-14 17:30", road: "River Rd", collision_type: "Angle Meets Left Turn", injury_severity: "Possible Injury", speed_limit: 40, driver_at_fault: "Yes" },
+    { report_number: "MCP2023010435", datetime: "2023-10-31 01:20", road: "New Hampshire Ave", collision_type: "Single Vehicle", injury_severity: "Suspected Minor Injury", speed_limit: 45, driver_at_fault: "Yes" },
+    { report_number: "MCP2022010902", datetime: "2022-01-07 08:05", road: "Frederick Rd", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "No" },
+    { report_number: "MCP2022011369", datetime: "2022-02-14 17:30", road: "Rockville Pike", collision_type: "Straight Movement Angle", injury_severity: "Possible Injury", speed_limit: 40, driver_at_fault: "Yes" },
     { report_number: "MCP2022011836", datetime: "2022-03-22 14:12", road: "Rockville Pike", collision_type: "Same Direction Sideswipe", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "No" },
-    { report_number: "MCP2022012303", datetime: "2022-04-09 19:45", road: "Georgia Ave", collision_type: "Head On Left Turn", injury_severity: "Suspected Serious Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2022012303", datetime: "2022-04-09 19:45", road: "Georgia Ave", collision_type: "Other", injury_severity: "Suspected Serious Injury", speed_limit: 35, driver_at_fault: "Yes" },
     { report_number: "MCP2022012770", datetime: "2022-05-16 12:30", road: "New Hampshire Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "Yes" },
     { report_number: "MCP2022013237", datetime: "2022-06-28 05:55", road: "Frederick Rd", collision_type: "Single Vehicle", injury_severity: "Fatal Injury", speed_limit: 50, driver_at_fault: "Yes" },
-    { report_number: "MCP2022013704", datetime: "2022-07-11 16:38", road: "University Blvd", collision_type: "Same Direction Rear End", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "Yes" },
-    { report_number: "MCP2022014171", datetime: "2022-08-23 09:15", road: "Connecticut Ave", collision_type: "Angle Meets Left Turn", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "No" },
-    { report_number: "MCP2021014638", datetime: "2021-01-05 21:20", road: "Veirs Mill Rd", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2022013704", datetime: "2022-07-11 16:38", road: "Connecticut Ave", collision_type: "Same Direction Rear End", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2022014171", datetime: "2022-08-23 09:15", road: "Connecticut Ave", collision_type: "Straight Movement Angle", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "No" },
+    { report_number: "MCP2021014638", datetime: "2021-01-05 21:20", road: "Georgia Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "Yes" },
     { report_number: "MCP2021015105", datetime: "2021-02-17 07:42", road: "Georgia Ave", collision_type: "Same Direction Sideswipe", injury_severity: "Suspected Minor Injury", speed_limit: 30, driver_at_fault: "Yes" },
-    { report_number: "MCP2021015572", datetime: "2021-03-30 15:08", road: "Colesville Rd", collision_type: "Angle Meets Left Turn", injury_severity: "Possible Injury", speed_limit: 40, driver_at_fault: "Yes" },
-    { report_number: "MCP2021016039", datetime: "2021-04-22 18:55", road: "Old Georgetown Rd", collision_type: "Head On Left Turn", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "No" },
-    { report_number: "MCP2021016506", datetime: "2021-05-08 11:30", road: "River Rd", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 40, driver_at_fault: "Yes" },
-    { report_number: "MCP2020016973", datetime: "2020-06-14 03:15", road: "Rockville Pike", collision_type: "Single Vehicle", injury_severity: "Suspected Serious Injury", speed_limit: 45, driver_at_fault: "Yes" },
+    { report_number: "MCP2021015572", datetime: "2021-03-30 15:08", road: "New Hampshire Ave", collision_type: "Straight Movement Angle", injury_severity: "Possible Injury", speed_limit: 40, driver_at_fault: "Yes" },
+    { report_number: "MCP2021016039", datetime: "2021-04-22 18:55", road: "Frederick Rd", collision_type: "Other", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "No" },
+    { report_number: "MCP2021016506", datetime: "2021-05-08 11:30", road: "Rockville Pike", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 40, driver_at_fault: "Yes" },
+    { report_number: "MCP2020016973", datetime: "2020-06-14 03:15", road: "Rockville Pike", collision_type: "Single Vehicle", injury_severity: "Suspected Serious Injury", speed_limit: 50, driver_at_fault: "Yes" },
     { report_number: "MCP2020017440", datetime: "2020-07-26 17:02", road: "New Hampshire Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 35, driver_at_fault: "Yes" },
-    { report_number: "MCP2020017907", datetime: "2020-08-09 13:40", road: "Frederick Rd", collision_type: "Angle Meets Left Turn", injury_severity: "Suspected Minor Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2020017907", datetime: "2020-08-09 13:40", road: "Frederick Rd", collision_type: "Straight Movement Angle", injury_severity: "Suspected Minor Injury", speed_limit: 35, driver_at_fault: "Yes" },
     { report_number: "MCP2020018374", datetime: "2020-09-21 10:25", road: "Georgia Ave", collision_type: "Same Direction Rear End", injury_severity: "No Apparent Injury", speed_limit: 30, driver_at_fault: "No" },
-    { report_number: "MCP2019018841", datetime: "2019-10-03 20:50", road: "University Blvd", collision_type: "Same Direction Sideswipe", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "Yes" },
-    { report_number: "MCP2019019308", datetime: "2019-11-15 06:18", road: "Connecticut Ave", collision_type: "Head On Left Turn", injury_severity: "Suspected Minor Injury", speed_limit: 35, driver_at_fault: "Yes" },
-    { report_number: "MCP2019019775", datetime: "2019-12-27 23:48", road: "Veirs Mill Rd", collision_type: "Single Vehicle", injury_severity: "Fatal Injury", speed_limit: 40, driver_at_fault: "Yes" }
+    { report_number: "MCP2019018841", datetime: "2019-10-03 20:50", road: "Connecticut Ave", collision_type: "Same Direction Sideswipe", injury_severity: "Possible Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2019019308", datetime: "2019-11-15 06:18", road: "Connecticut Ave", collision_type: "Other", injury_severity: "Suspected Minor Injury", speed_limit: 35, driver_at_fault: "Yes" },
+    { report_number: "MCP2019019775", datetime: "2019-12-27 23:48", road: "Georgia Ave", collision_type: "Single Vehicle", injury_severity: "Fatal Injury", speed_limit: 50, driver_at_fault: "Yes" }
   ],
   audit_trail: [
-    { step: 1, name: "Ingestion", description: "โหลดข้อมูลดิบจาก Montgomery County Open Data", rows_before: null, rows_after: 196432, fixes: 0, detail: "นำเข้าไฟล์ CSV 196,432 แถว ครบทุกคอลัมน์" },
-    { step: 2, name: "Deduplication", description: "ตรวจจับและลบแถวซ้ำด้วย Report Number + Person ID", rows_before: 196432, rows_after: 195180, fixes: 1252, detail: "ลบ 1,252 แถวซ้ำ (0.64%) จากการรายงานซ้ำซ้อน" },
-    { step: 3, name: "Normalization", description: "ปรับรูปแบบข้อมูล: วันที่ ชื่อถนน ประเภทการชน", rows_before: 195180, rows_after: 195180, fixes: 3247, detail: "แก้ไข 3,247 ฟิลด์ — รวมถนนที่สะกดต่างกัน, แปลงรูปแบบวันที่" },
-    { step: 4, name: "Outlier Handling", description: "ตรวจจับค่าผิดปกติ Vehicle Year ด้วย IQR แทนที่ด้วย Median", rows_before: 195180, rows_after: 195180, fixes: 892, detail: "แทนที่ 892 ค่า Vehicle Year ที่ <1985 หรือ >2026 ด้วย Median = 2012" },
-    { step: 5, name: "Geo Filtering", description: "กรองเฉพาะ Montgomery County, Maryland", rows_before: 195180, rows_after: 194719, fixes: 461, detail: "ลบ 461 แถวที่พิกัดอยู่นอกเขต Montgomery County" }
+    { step: 1, name: "Ingestion", description: "โหลดข้อมูลดิบจาก Montgomery County Open Data Portal", rows_before: null, rows_after: 194726, fixes: 0, detail: "ข้อมูลดิบ 194,726 แถว (39 คอลัมน์)" },
+    { step: 2, name: "Deduplication", description: "ตรวจจับและลบแถวซ้ำสมบูรณ์ (Exact Duplicate Rows)", rows_before: 194726, rows_after: 194726, fixes: 0, detail: "แถวซ้ำสมบูรณ์ = 0 แถว (0.00%) | คงเหลือ 194,726 แถว" },
+    { step: 3, name: "Normalization", description: "ปรับรูปแบบตัวพิมพ์ใหญ่ (Uppercase) และรวมค่าว่าง", rows_before: 194726, rows_after: 194726, fixes: 419820, detail: "ปรับ Uppercase & รวมค่าว่าง = 419,820 จุด (8 คอลัมน์) | คงเหลือ 194,726 แถว" },
+    { step: 4, name: "Outlier Handling", description: "ตรวจจับค่าผิดปกติ Vehicle Year และแทนที่ด้วยมัธยฐาน", rows_before: 194726, rows_after: 194726, fixes: 4870, detail: "Median Imputation แทนที่ปีรถ <1950 หรือ >2026 ด้วยมัธยฐาน 2012 = 4,870 คัน | คงเหลือ 194,726 แถว" },
+    { step: 5, name: "Geo Filtering", description: "คัดกรองพิกัดให้อยู่เฉพาะในเขต Montgomery County, Maryland", rows_before: 194726, rows_after: 194719, fixes: 7, detail: "คัดกรองพิกัดหลุดนอกรัฐ Maryland = ตัดออก 7 แถว | คงเหลือ 194,719 แถว (สูญเสียข้อมูลเพียง 0.003%)" }
   ],
   reconciliation: {
     field: "Vehicle Year",
-    method: "IQR-based outlier detection → Median imputation (แทนที่ค่าที่ <1985 หรือ >2026 ด้วย Median = 2012)",
-    before: { min: 1800, median: 2010, mean: 2006.3, max: 2099, outliers: 892 },
-    after: { min: 1985, median: 2012, mean: 2011.4, max: 2026, outliers: 0 }
+    method: "Median Imputation: ตรวจจับค่าผิดปกติ (ปี 0 และ 9999 หรือปีที่ <1950 และ >2026) จำนวน 4,870 คัน แทนที่ด้วยค่ามัธยฐาน = 2012",
+    before: { count: 194719, min: 0, median: 2012, mean: 1965.7, max: 9999, outliers: 4870 },
+    after: { count: 194719, min: 1955, median: 2012, mean: 2011.1, max: 2026, outliers: 0 }
   }
 };
 
@@ -545,7 +545,7 @@ function TraceabilityBar() {
 
         <div className="hidden sm:flex items-center gap-2 text-slate-500 text-xs">
           <Database className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Data Integrity Score: <strong className="text-slate-800 font-bold">99.13%</strong> | Median Imputation Active</span>
+          <span>Data Integrity Score: <strong className="text-slate-800 font-bold">99.997%</strong> | Median Imputation Active</span>
         </div>
       </div>
     </div>
@@ -1033,7 +1033,7 @@ function VisualizationsSection({ appData, activeChartFilter, onSelectChartFilter
           </div>
 
           <InsightBox
-            what="อุบัติเหตุสะสมหนาแน่นที่สุดช่วง 15:00-17:00 น. (17:00 น. สูงสุด 15,636 ครั้ง)"
+            what="อุบัติเหตุสะสมหนาแน่นที่สุดช่วง 15:00-17:00 น. (17:00 น. สูงสุด 15,636 ครั้ง, 16:00 น. = 15,256 ครั้ง, 08:00 น. = 11,871 ครั้ง)"
             soWhat="ปริมาณรถหนาแน่นช่วงโรงเรียนและเลิกงาน ส่งผลให้เกิดการชนท้ายชะลอตัว"
             nowWhat="ปรับสัญญาณไฟจราจรเป็นแบบ Dynamic Flow และจัดกำลังตำรวจคุมแยกหลัก"
           />
@@ -1048,14 +1048,14 @@ function VisualizationsSection({ appData, activeChartFilter, onSelectChartFilter
                 รูปแบบการชน 5 อันดับแรก (Top 5 Collision Types)
               </h3>
               <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100">
-                ชนท้ายครองอันดับ 1
+                ชนท้าย 55,758 ครั้ง (28.6%)
               </span>
             </div>
             <Chart options={collisionChartOptions} series={collisionChartSeries} type="bar" height={280} />
           </div>
 
           <InsightBox
-            what="ชนท้ายทิศทางเดียวกันสูงถึง 28.6% (Same Dir Rear End ชนท้ายอันดับ 1)"
+            what="ชนท้ายทิศทางเดียวกันสูงถึง 55,758 ครั้ง หรือ 28.6% (Same Dir Rear End ชนท้ายอันดับ 1)"
             soWhat="ผู้ขับขี่ขับชิดคันหน้าเกินไปและเสียสมาธิ (Distracted) จากสมาร์ตโฟน"
             nowWhat="ตีเส้นสีเตือนระยะปลอดภัย (Keep Distance) บริเวณก่อนถึงทางร่วมทางแยก"
           />
@@ -1077,7 +1077,7 @@ function VisualizationsSection({ appData, activeChartFilter, onSelectChartFilter
           </div>
 
           <InsightBox
-            what="ถนนจำกัดความเร็วเกิน 45 mph มีอัตราเคสสาหัส 1.77% (สูงกว่าเขตชุมชน 4 เท่า)"
+            what="ถนนจำกัดความเร็วเกิน 45 mph มีอัตราเคสสาหัส 1.77% (สูงกว่าเขตความเร็วต่ำ ≤25 mph ที่ 0.44% ถึง 4 เท่า)"
             soWhat="แรงปะทะจากความเร็วสูงส่งผลให้โครงสร้างนิรภัยไม่สามารถปกป้องผู้โดยสารได้"
             nowWhat="ติดตั้งกล้องตรวจจับความเร็วอัตโนมัติบนสายทางหลวงเชื่อมระหว่างเมือง"
           />
@@ -1092,7 +1092,7 @@ function VisualizationsSection({ appData, activeChartFilter, onSelectChartFilter
                 5 ถนนเกิดเหตุสะสมสูงสุด (Top 5 Crash Corridors)
               </h3>
               <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md">
-                Georgia Ave แชมป์ 4,218 เคส
+                Georgia Ave แชมป์ 11,384 ครั้ง
               </span>
             </div>
             <Chart options={roadsChartOptions} series={roadsChartSeries} type="bar" height={280} />
@@ -1467,11 +1467,11 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
         <div className="flex gap-4 border-l border-slate-700 pl-6 text-center">
           <div>
             <p className="text-xs text-slate-400 uppercase tracking-wider">สูญเสียข้อมูล</p>
-            <p className="text-xl font-extrabold text-emerald-400 tabular-nums">0.87%</p>
+            <p className="text-xl font-extrabold text-emerald-400 tabular-nums">0.003%</p>
           </div>
           <div>
             <p className="text-xs text-slate-400 uppercase tracking-wider">จุดที่แก้ไข</p>
-            <p className="text-xl font-extrabold text-white tabular-nums">5,852</p>
+            <p className="text-xl font-extrabold text-white tabular-nums">424,697</p>
           </div>
         </div>
       </div>
@@ -1538,7 +1538,7 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
           <div>
             <p className="font-bold text-slate-800 mb-0.5">สรุปผลการเดินท่อข้อมูล (Pipeline Summary)</p>
             <p className="text-slate-600 leading-relaxed">
-              จากข้อมูลดิบทั้งหมด <strong>196,432 แถว</strong> ผ่านกระบวนการทั้ง 5 ขั้นตอน ได้ข้อมูลสมบูรณ์พร้อมวิเคราะห์ <strong>194,719 แถว</strong> คิดเป็นอัตราสูญเสียข้อมูลจากการตัด Outlier/แถวนอกรัฐเพียง <strong>0.87%</strong> พร้อมบันทึกจุดที่แก้ไขทั้งสิ้น <strong>5,852 จุด</strong>
+              จากข้อมูลดิบทั้งหมด <strong>194,726 แถว</strong> ผ่านกระบวนการทั้ง 5 ขั้นตอน ได้ข้อมูลสมบูรณ์พร้อมวิเคราะห์ <strong>194,719 แถว</strong> คิดเป็นอัตราสูญเสียข้อมูลจากการตัดพิกัดหลุดนอกรัฐ Maryland เพียง <strong>0.003%</strong> (ตัดออก 7 แถว) พร้อมบันทึกจุดที่แก้ไขทั้งสิ้น <strong>424,697 จุด</strong>
             </p>
           </div>
         </div>
@@ -1561,6 +1561,7 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
                 <th className="py-3 px-4">สถานะ (Dataset State)</th>
+                <th className="py-3 px-4 text-right">จำนวนแถว (Count)</th>
                 <th className="py-3 px-4 text-right">ค่าต่ำสุด (Min)</th>
                 <th className="py-3 px-4 text-right">มัธยฐาน (Median)</th>
                 <th className="py-3 px-4 text-right">ค่าเฉลี่ย (Mean)</th>
@@ -1574,20 +1575,23 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
                   <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                   ก่อนคลีน (Raw / Before Clean)
                 </td>
+                <td className="py-3.5 px-4 text-right font-bold">
+                  {reconciliation.before?.count?.toLocaleString() ?? '194,719'}
+                </td>
                 <td className="py-3.5 px-4 text-right text-rose-600 font-bold">
-                  {reconciliation.before?.min ?? 1800}
+                  {reconciliation.before?.min ?? 0}
                 </td>
                 <td className="py-3.5 px-4 text-right">
-                  {reconciliation.before?.median ?? 2010}
+                  {reconciliation.before?.median ?? 2012}
                 </td>
                 <td className="py-3.5 px-4 text-right">
-                  {reconciliation.before?.mean ?? 2006.3}
+                  {reconciliation.before?.mean ?? 1965.7}
                 </td>
                 <td className="py-3.5 px-4 text-right text-rose-600 font-bold">
-                  {reconciliation.before?.max ?? 2099}
+                  {reconciliation.before?.max ?? 9999}
                 </td>
                 <td className="py-3.5 px-4 text-right text-rose-600 font-bold">
-                  {reconciliation.before?.outliers?.toLocaleString() ?? '892'}
+                  {reconciliation.before?.outliers?.toLocaleString() ?? '4,870'}
                 </td>
               </tr>
               <tr className="hover:bg-slate-50/80 transition bg-emerald-50/30">
@@ -1595,14 +1599,17 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                   หลังคลีน (Cleaned / Audited)
                 </td>
+                <td className="py-3.5 px-4 text-right font-bold text-emerald-700">
+                  {reconciliation.after?.count?.toLocaleString() ?? '194,719'}
+                </td>
                 <td className="py-3.5 px-4 text-right text-emerald-700 font-bold">
-                  {reconciliation.after?.min ?? 1985}
+                  {reconciliation.after?.min ?? 1955}
                 </td>
                 <td className="py-3.5 px-4 text-right text-emerald-700 font-bold">
                   {reconciliation.after?.median ?? 2012}
                 </td>
                 <td className="py-3.5 px-4 text-right text-emerald-700">
-                  {reconciliation.after?.mean ?? 2011.4}
+                  {reconciliation.after?.mean ?? 2011.1}
                 </td>
                 <td className="py-3.5 px-4 text-right text-emerald-700 font-bold">
                   {reconciliation.after?.max ?? 2026}
@@ -1618,10 +1625,10 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/80 text-xs text-slate-700 space-y-1.5">
           <p className="font-bold text-slate-800">ระเบียบวิธีดำเนินการ (Methodology):</p>
           <p className="text-slate-600 leading-relaxed font-mono text-[11px]">
-            {reconciliation.method || "IQR-based outlier detection → Median imputation (2012)"}
+            {reconciliation.method || "Median Imputation: ตรวจจับค่าผิดปกติ (ปี 0 และ 9999 หรือปีที่ <1950 และ >2026) จำนวน 4,870 คัน แทนที่ด้วยค่ามัธยฐาน = 2012"}
           </p>
           <p className="text-slate-500 text-[11px] pt-1">
-            * แทนที่ปี 0 และ 9999 (หรือปีที่ต่ำกว่า 1985 และสูงกว่า 2026) ด้วยค่ามัธยฐาน 2012 จำนวน 892 ค่า เพื่อป้องกันไม่ให้ข้อมูลเบี่ยงเบนในการคำนวณอายุเฉลี่ยของยานพาหนะ
+            * แทนที่ปี 0 และ 9999 (หรือปีที่ต่ำกว่า 1950 และสูงกว่า 2026) ด้วยค่ามัธยฐาน 2012 จำนวน 4,870 ค่า เพื่อป้องกันไม่ให้ข้อมูลเบี่ยงเบนในการคำนวณอายุเฉลี่ยของยานพาหนะ
           </p>
         </div>
       </div>
