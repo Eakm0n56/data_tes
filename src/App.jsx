@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Chart from 'react-apexcharts';
 import {
   ShieldCheck,
@@ -11,25 +11,24 @@ import {
   Car,
   Activity,
   CheckCircle2,
-  Filter,
   Lock,
   User,
   Calendar,
   MapPin,
-  Gauge,
   Info,
   SlidersHorizontal,
   ChevronRight,
   TrendingUp,
   FileCheck2,
   Database,
-  ArrowRight
+  Sparkles,
+  X
 } from 'lucide-react';
 
 // นำเข้าข้อมูลโดยตรงจาก ./data/dashboard_data.json ตามข้อกำหนด
 import dataFromJson from './data/dashboard_data.json';
 
-// ════════════════ FALLBACK MOCK DATA (ป้องกันเว็บพังกรณีหาไฟล์ไม่เจอ) ════════════════
+// ════════════════ FALLBACK MOCK DATA ════════════════
 const FALLBACK_DATA = {
   summary: {
     total_incidents: 109684,
@@ -127,19 +126,50 @@ const FALLBACK_DATA = {
 
 const appData = dataFromJson || FALLBACK_DATA;
 
+// ════════════════ ⚡ ULTRA-FAST COUNT-UP HOOK (60 FPS) ════════════════
+function useCountUp(target, duration = 1200, decimals = 0) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp = null;
+    let frameId;
+    const startVal = 0;
+    const targetVal = typeof target === 'number' ? target : parseFloat(target) || 0;
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      // easeOutExpo for energetic and smooth acceleration-deceleration
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      const current = startVal + (targetVal - startVal) * ease;
+      setCount(current);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(step);
+      } else {
+        setCount(targetVal);
+      }
+    };
+
+    frameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frameId);
+  }, [target, duration]);
+
+  return decimals > 0 ? count.toFixed(decimals) : Math.round(count).toLocaleString();
+}
+
 // ════════════════ MAIN APP COMPONENT ════════════════
 export default function App() {
-  // สถานะการเข้าสู่ระบบกรรมการ (Judge Access Gate - เกณฑ์ 3.5.5)
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'audit'
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [currentTime, setCurrentTime] = useState('');
 
-  // ฟิลเตอร์ข้อมูล (Interactive Explorer & Filters - เกณฑ์ 3.5.3.3, 3.5.4)
+  // ฟิลเตอร์ข้อมูล
   const [severityFilter, setSeverityFilter] = useState('');
   const [roadSearch, setRoadSearch] = useState('');
   const [faultFilter, setFaultFilter] = useState('');
 
-  // อัปเดตนาฬิกาเรียลไทม์
+  // นาฬิกาเรียลไทม์
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -150,25 +180,25 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // กรองข้อมูลในตาราง
+  // กรองข้อมูลในตารางแบบ Optimized Memoization
   const filteredIncidents = useMemo(() => {
     const list = appData.incidents || [];
+    const searchLower = roadSearch.trim().toLowerCase();
+
     return list.filter(item => {
-      const matchSeverity = !severityFilter || item.injury_severity === severityFilter;
-      const matchRoad = !roadSearch || item.road.toLowerCase().includes(roadSearch.toLowerCase().trim());
-      const matchFault = !faultFilter || item.driver_at_fault === faultFilter;
-      return matchSeverity && matchRoad && matchFault;
+      if (severityFilter && item.injury_severity !== severityFilter) return false;
+      if (faultFilter && item.driver_at_fault !== faultFilter) return false;
+      if (searchLower && !item.road.toLowerCase().includes(searchLower)) return false;
+      return true;
     });
   }, [severityFilter, roadSearch, faultFilter]);
 
-  // ฟังก์ชันรีเซ็ตฟิลเตอร์
   const handleResetFilters = () => {
     setSeverityFilter('');
     setRoadSearch('');
     setFaultFilter('');
   };
 
-  // ฟังก์ชันส่งออก CSV (Export Data)
   const handleExportCSV = () => {
     if (!filteredIncidents.length) return;
     const headers = ["Report Number", "Date Time", "Road", "Collision Type", "Injury Severity", "Speed Limit", "Driver At Fault"];
@@ -194,7 +224,6 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  // ════════════════ RENDER GATE / DASHBOARD ════════════════
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col selection:bg-slate-200">
       {/* 1. ระบบยืนยันตัวตนสำหรับกรรมการ (Judge Access Gate) */}
@@ -216,7 +245,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {activeTab === 'dashboard' ? (
-          <>
+          <div className="space-y-8 animate-fade-in">
             {/* 4. การ์ดสรุปตัวชี้วัดหลัก 4 ใบ (Overview KPI Cards) */}
             <OverviewKpis summary={appData.summary} />
 
@@ -236,7 +265,7 @@ export default function App() {
               onResetFilters={handleResetFilters}
               onExportCSV={handleExportCSV}
             />
-          </>
+          </div>
         ) : (
           /* 7. แท็บร่องรอยการตรวจสอบ (Data Audit & Reconciliation Tab) */
           <DataAuditTab
@@ -247,14 +276,14 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white/70 backdrop-blur py-6 no-print">
+      <footer className="border-t border-slate-200 bg-white/70 backdrop-blur-md py-6 no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
             <span>Montgomery County Department of Transportation & Police Crash Database (2015–2025)</span>
           </div>
           <div>
-            <span>Data Analytics Competition 2026 · Built with React, Vite, Tailwind CSS & ApexCharts</span>
+            <span>Data Analytics Competition 2026 · Supercharged with React 18, Vite & ApexCharts</span>
           </div>
         </div>
       </footer>
@@ -267,6 +296,7 @@ function JudgeLoginModal({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e) => {
@@ -275,14 +305,15 @@ function JudgeLoginModal({ onLoginSuccess }) {
     setErrorMsg(false);
 
     setTimeout(() => {
-      // ตรวจสอบข้อมูล: Username = "judge", Password = "judge2026"
       if (username.trim() === 'judge' && password === 'judge2026') {
         onLoginSuccess();
       } else {
         setErrorMsg(true);
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 450);
       }
       setIsLoading(false);
-    }, 250);
+    }, 200);
   };
 
   const handleQuickFill = () => {
@@ -292,13 +323,23 @@ function JudgeLoginModal({ onLoginSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center login-bg-pattern p-4">
-      <div className="w-full max-w-md glass-modal rounded-3xl p-8 sm:p-10 shadow-2xl border border-white/80 animate-fade-up">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center login-bg-pattern p-4 overflow-hidden">
+      {/* Ambient Floating Glow Orbs for Luxury Look */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-float-slow pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-float-reverse pointer-events-none"></div>
+
+      <div className={`relative w-full max-w-md glass-modal rounded-3xl p-8 sm:p-10 shadow-2xl border border-white/80 animate-scale-in gpu-accelerated ${isShaking ? 'animate-shake' : ''}`}>
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-700 flex items-center justify-center shadow-lg mb-4 ring-4 ring-slate-100">
-            <ShieldCheck className="w-8 h-8 text-white" />
+          <div className="relative group">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-slate-900 via-slate-800 to-indigo-900 flex items-center justify-center shadow-xl mb-4 ring-4 ring-slate-100 transition duration-300 group-hover:scale-105">
+              <ShieldCheck className="w-8 h-8 text-white transition duration-300 group-hover:rotate-6" />
+            </div>
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500"></span>
+            </span>
           </div>
-          <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+          <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
             ระบบยืนยันตัวตนสำหรับกรรมการ
           </h2>
           <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
@@ -318,7 +359,7 @@ function JudgeLoginModal({ onLoginSuccess }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="กรอกชื่อผู้ใช้ (เช่น judge)"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white/80 focus:bg-white focus:border-slate-500 focus:ring-2 focus:ring-slate-100 text-sm outline-none transition"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white/90 focus:bg-white focus:border-slate-800 focus:ring-2 focus:ring-slate-200 text-sm outline-none transition duration-200"
                 required
               />
             </div>
@@ -335,7 +376,7 @@ function JudgeLoginModal({ onLoginSuccess }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="กรอกรหัสผ่าน (เช่น judge2026)"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white/80 focus:bg-white focus:border-slate-500 focus:ring-2 focus:ring-slate-100 text-sm outline-none transition"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white/90 focus:bg-white focus:border-slate-800 focus:ring-2 focus:ring-slate-200 text-sm outline-none transition duration-200"
                 required
               />
             </div>
@@ -343,16 +384,16 @@ function JudgeLoginModal({ onLoginSuccess }) {
 
           {/* แจ้งเตือนข้อผิดพลาดเมื่อกรอกผิด */}
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-medium flex items-center gap-2 animate-fade-in">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-medium flex items-center gap-2 animate-fade-in shadow-xs">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-              <span>ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง (ลองตรวจสอบ: judge / judge2026)</span>
+              <span>ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง (กรุณาลอง: judge / judge2026)</span>
             </div>
           )}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 active:scale-[0.99] transition shadow-md flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white text-sm font-semibold transition duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 btn-shimmer"
           >
             {isLoading ? (
               <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -370,9 +411,10 @@ function JudgeLoginModal({ onLoginSuccess }) {
           <button
             type="button"
             onClick={handleQuickFill}
-            className="text-slate-600 hover:text-slate-900 underline font-medium"
+            className="inline-flex items-center gap-1 text-slate-700 hover:text-slate-900 font-semibold underline transition hover:scale-105"
           >
-            ใส่รหัสทดสอบอัตโนมัติ
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            <span>เติมรหัสผ่านอัตโนมัติ</span>
           </button>
         </div>
       </div>
@@ -383,11 +425,11 @@ function JudgeLoginModal({ onLoginSuccess }) {
 // ════════════════ 2. HEADER ════════════════
 function Header({ currentTime, onLogout }) {
   return (
-    <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200 shadow-xs no-print">
+    <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200 shadow-xs no-print transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Title & Logo */}
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-md text-white">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center shadow-md text-white transition hover:scale-105">
             <Car className="w-5 h-5" />
           </div>
           <div>
@@ -401,15 +443,15 @@ function Header({ currentTime, onLogout }) {
         </div>
 
         {/* Right Side Stats & Logout */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Live Indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold shadow-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
             <span>Live System</span>
           </div>
 
           {/* Clock */}
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-mono">
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100/90 px-3 py-1 rounded-full font-mono border border-slate-200 shadow-xs">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
             <span>{currentTime || '00:00:00'}</span>
           </div>
@@ -423,7 +465,7 @@ function Header({ currentTime, onLogout }) {
           {/* Logout Button */}
           <button
             onClick={onLogout}
-            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-red-200 transition active:scale-95"
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-rose-200 transition duration-150 active:scale-95 shadow-xs"
             title="ออกจากระบบ"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -442,7 +484,7 @@ function TraceabilityBar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {/* Audit Badge with green pulse animation */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200 shadow-xs hover:bg-slate-150 transition">
             <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
             <span>194,719 Records (109,684 Incidents) | Pipeline v1.0 Audited</span>
           </div>
@@ -458,9 +500,9 @@ function TraceabilityBar() {
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2 text-slate-400 text-xs">
+        <div className="hidden sm:flex items-center gap-2 text-slate-500 text-xs">
           <Database className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Data Cleanliness: 99.13% | Median Imputation Active</span>
+          <span>Data Integrity Score: <strong className="text-slate-800 font-bold">99.13%</strong> | Median Imputation Active</span>
         </div>
       </div>
     </div>
@@ -474,9 +516,9 @@ function TabNavigation({ activeTab, setActiveTab }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2">
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold border-b-2 transition ${
+          className={`flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold border-b-2 transition duration-200 ${
             activeTab === 'dashboard'
-              ? 'border-slate-800 text-slate-900 bg-slate-50/50'
+              ? 'border-slate-900 text-slate-900 bg-slate-50/60'
               : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
           }`}
         >
@@ -486,9 +528,9 @@ function TabNavigation({ activeTab, setActiveTab }) {
 
         <button
           onClick={() => setActiveTab('audit')}
-          className={`flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold border-b-2 transition ${
+          className={`flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold border-b-2 transition duration-200 ${
             activeTab === 'audit'
-              ? 'border-slate-800 text-slate-900 bg-slate-50/50'
+              ? 'border-slate-900 text-slate-900 bg-slate-50/60'
               : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
           }`}
         >
@@ -502,6 +544,15 @@ function TabNavigation({ activeTab, setActiveTab }) {
 
 // ════════════════ 4. OVERVIEW KPI CARDS (เกณฑ์ 3.5.3.3) ════════════════
 function OverviewKpis({ summary }) {
+  const animatedIncidents = useCountUp(summary.total_incidents, 1000);
+  const animatedPersons = useCountUp(summary.total_persons, 1100);
+  const animatedSevere = useCountUp(summary.severe_fatal_cases, 1000);
+  const animatedSeverePct = useCountUp(summary.severe_pct, 1200, 2);
+  const animatedSubstancePct = useCountUp(summary.substance_pct, 1200, 2);
+  const animatedSubstanceCount = useCountUp(summary.substance_drivers, 1000);
+  const animatedPeakCount = useCountUp(summary.peak_hour_count, 1000);
+  const animatedFridayCount = useCountUp(summary.peak_day_count, 1100);
+
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
@@ -509,66 +560,66 @@ function OverviewKpis({ summary }) {
           <span className="w-2 h-2 rounded-full bg-slate-400"></span>
           ตัวชี้วัดหลักเชิงยุทธศาสตร์ (Key Performance Indicators)
         </h2>
-        <span className="text-xs text-slate-400">อัปเดตจากชุดข้อมูลคลีน 100%</span>
+        <span className="text-xs text-slate-400">ระบบประมวลผลความเร็วสูง (Hardware Accelerated)</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Total Incidents */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 card-lift border-t-4 border-t-slate-700">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 card-lift border-t-4 border-t-slate-800 animate-fade-up">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               เหตุการณ์ทั้งหมด (Total Incidents)
             </span>
-            <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+            <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 transition group-hover:scale-110">
               <Car className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-slate-800 tabular-nums">
-            {summary.total_incidents.toLocaleString()} <span className="text-base font-semibold text-slate-600">เคส</span>
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums">
+            {animatedIncidents} <span className="text-base font-semibold text-slate-600">เคส</span>
           </div>
           <p className="text-xs text-slate-500 mt-2 font-medium">
-            จากทั้งหมด <span className="font-bold text-slate-700">{summary.total_persons.toLocaleString()} บุคคล</span>
+            จากทั้งหมด <span className="font-bold text-slate-700">{animatedPersons} บุคคล</span>
           </p>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-400 flex items-center gap-1.5">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
             <span>คัดกรองพิกัดหลุดนอกรัฐ 7 แถว</span>
           </div>
         </div>
 
         {/* Card 2: Severe & Fatal */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 card-lift border-t-4 border-t-rose-500">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 card-lift border-t-4 border-t-rose-500 animate-fade-up [animation-delay:80ms]">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-rose-500 uppercase tracking-wider">
               บาดเจ็บสาหัสและเสียชีวิต (Severe & Fatal)
             </span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
+            <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 transition group-hover:scale-110">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-slate-800 tabular-nums">
-            {summary.severe_fatal_cases.toLocaleString()} <span className="text-base font-semibold text-slate-600">เคส</span>
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums">
+            {animatedSevere} <span className="text-base font-semibold text-slate-600">เคส</span>
           </div>
           <p className="text-xs text-slate-500 mt-2 font-medium">
-            คิดเป็น <span className="font-bold text-rose-600">{summary.severe_pct}%</span> ของเคสทั้งหมด
+            คิดเป็น <span className="font-bold text-rose-600">{animatedSeverePct}%</span> ของเคสทั้งหมด
           </p>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-400 flex items-center gap-1.5">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0"></span>
             <span>เสียชีวิต 177 | สาหัส 1,595 ราย</span>
           </div>
         </div>
 
         {/* Card 3: Substance Drivers */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 card-lift border-t-4 border-t-amber-500">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 card-lift border-t-4 border-t-amber-500 animate-fade-up [animation-delay:160ms]">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
               สารมึนเมาในคนขับ (Substance Involved)
             </span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 transition group-hover:scale-110">
               <Activity className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-slate-800 tabular-nums">
-            {summary.substance_pct}% <span className="text-base font-normal text-slate-500 text-sm">({summary.substance_drivers.toLocaleString()} เคส)</span>
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums">
+            {animatedSubstancePct}% <span className="text-base font-normal text-slate-500 text-sm">({animatedSubstanceCount} เคส)</span>
           </div>
           <p className="text-xs text-slate-500 mt-2 font-medium">
             เกี่ยวข้องกับแอลกอฮอล์และสารเสพติด
@@ -580,24 +631,24 @@ function OverviewKpis({ summary }) {
         </div>
 
         {/* Card 4: Peak Hour & Day */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 card-lift border-t-4 border-t-emerald-500">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 card-lift border-t-4 border-t-emerald-500 animate-fade-up [animation-delay:240ms]">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
               ช่วงเวลาพีคสูงสุด (Peak Incident Window)
             </span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 transition group-hover:scale-110">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-slate-800 tabular-nums">
-            {summary.peak_hour}:00 น. <span className="text-base font-normal text-slate-500 text-sm">({summary.peak_hour_count.toLocaleString()} ครั้ง)</span>
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums">
+            {summary.peak_hour}:00 น. <span className="text-base font-normal text-slate-500 text-sm">({animatedPeakCount} ครั้ง)</span>
           </div>
           <p className="text-xs text-slate-500 mt-2 font-medium">
             ช่วงเลิกงานและโรงเรียนเลิก
           </p>
           <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-600 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-            <span>วันศุกร์หนาแน่นที่สุด ({summary.peak_day_count.toLocaleString()} ครั้ง)</span>
+            <span>วันศุกร์หนาแน่นที่สุด ({animatedFridayCount} ครั้ง)</span>
           </div>
         </div>
       </div>
@@ -607,19 +658,26 @@ function OverviewKpis({ summary }) {
 
 // ════════════════ 5. VISUALIZATIONS & 3-BEAT INSIGHT BOXES (เกณฑ์ 3.5.3.1, 3.5.3.2) ════════════════
 function VisualizationsSection({ appData }) {
+  // Chart Animation Options สำหรับความลื่นไหลระดับสูง
+  const baseChartAnimations = {
+    enabled: true,
+    easing: 'easeinout',
+    speed: 700,
+    animateGradually: { enabled: true, delay: 120 },
+    dynamicAnimation: { enabled: true, speed: 300 }
+  };
+
   // Chart 1: Smooth Area Chart (Hourly Trend)
   const hourlyChartOptions = {
     chart: {
       type: 'area',
-      height: 280,
+      height: 270,
       toolbar: { show: false },
-      fontFamily: 'Sarabun, Inter, sans-serif'
+      fontFamily: 'Sarabun, Inter, sans-serif',
+      animations: baseChartAnimations
     },
-    stroke: {
-      curve: 'smooth',
-      width: 2.5
-    },
-    colors: ['#475569'],
+    stroke: { curve: 'smooth', width: 2.5 },
+    colors: ['#334155'],
     fill: {
       type: 'gradient',
       gradient: {
@@ -631,9 +689,7 @@ function VisualizationsSection({ appData }) {
     },
     xaxis: {
       categories: appData.hourly_trend.labels,
-      labels: {
-        style: { fontSize: '11px', colors: '#64748b' }
-      },
+      labels: { style: { fontSize: '11px', colors: '#64748b' } },
       axisBorder: { show: false },
       axisTicks: { show: false }
     },
@@ -644,13 +700,8 @@ function VisualizationsSection({ appData }) {
       }
     },
     dataLabels: { enabled: false },
-    grid: {
-      borderColor: '#f1f5f9',
-      strokeDashArray: 4
-    },
-    tooltip: {
-      y: { formatter: (val) => `${val.toLocaleString()} ครั้ง` }
-    }
+    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+    tooltip: { y: { formatter: (val) => `${val.toLocaleString()} ครั้ง` } }
   };
 
   const hourlyChartSeries = [{
@@ -662,23 +713,23 @@ function VisualizationsSection({ appData }) {
   const collisionChartOptions = {
     chart: {
       type: 'bar',
-      height: 280,
+      height: 270,
       toolbar: { show: false },
-      fontFamily: 'Sarabun, Inter, sans-serif'
+      fontFamily: 'Sarabun, Inter, sans-serif',
+      animations: baseChartAnimations
     },
     plotOptions: {
       bar: {
         horizontal: true,
         borderRadius: 6,
-        barHeight: '60%',
-        distributed: false
+        barHeight: '62%'
       }
     },
-    colors: ['#64748b'],
+    colors: ['#475569'],
     dataLabels: {
       enabled: true,
       formatter: (val) => val.toLocaleString(),
-      style: { fontSize: '11px', colors: ['#fff'] }
+      style: { fontSize: '11px', colors: ['#fff'], fontWeight: 600 }
     },
     xaxis: {
       categories: appData.collision_types.map(c => c.type),
@@ -690,7 +741,7 @@ function VisualizationsSection({ appData }) {
     },
     yaxis: {
       labels: {
-        style: { fontSize: '11px', colors: '#334155', fontWeight: 500 },
+        style: { fontSize: '11px', colors: '#334155', fontWeight: 600 },
         maxWidth: 180
       }
     },
@@ -706,9 +757,10 @@ function VisualizationsSection({ appData }) {
   const speedChartOptions = {
     chart: {
       type: 'bar',
-      height: 280,
+      height: 270,
       toolbar: { show: false },
-      fontFamily: 'Sarabun, Inter, sans-serif'
+      fontFamily: 'Sarabun, Inter, sans-serif',
+      animations: baseChartAnimations
     },
     plotOptions: {
       bar: {
@@ -722,14 +774,12 @@ function VisualizationsSection({ appData }) {
       enabled: true,
       formatter: (val) => `${val}%`,
       offsetY: -20,
-      style: { fontSize: '11px', colors: ['#334155'], fontWeight: 600 }
+      style: { fontSize: '11px', colors: ['#334155'], fontWeight: 700 }
     },
     legend: { show: false },
     xaxis: {
       categories: appData.speed_severity.map(s => s.bracket),
-      labels: {
-        style: { fontSize: '12px', colors: '#64748b', fontWeight: 600 }
-      },
+      labels: { style: { fontSize: '12px', colors: '#64748b', fontWeight: 600 } },
       axisBorder: { show: false }
     },
     yaxis: {
@@ -751,22 +801,23 @@ function VisualizationsSection({ appData }) {
   const roadsChartOptions = {
     chart: {
       type: 'bar',
-      height: 280,
+      height: 270,
       toolbar: { show: false },
-      fontFamily: 'Sarabun, Inter, sans-serif'
+      fontFamily: 'Sarabun, Inter, sans-serif',
+      animations: baseChartAnimations
     },
     plotOptions: {
       bar: {
         horizontal: true,
         borderRadius: 6,
-        barHeight: '60%'
+        barHeight: '62%'
       }
     },
-    colors: ['#475569'],
+    colors: ['#334155'],
     dataLabels: {
       enabled: true,
       formatter: (val) => `${val.toLocaleString()} เคส`,
-      style: { fontSize: '11px', colors: ['#fff'] }
+      style: { fontSize: '11px', colors: ['#fff'], fontWeight: 600 }
     },
     xaxis: {
       categories: appData.top_roads.map(r => r.road),
@@ -805,7 +856,7 @@ function VisualizationsSection({ appData }) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span className="w-2 h-2 rounded-full bg-slate-600"></span>
                 แนวโน้มอุบัติเหตุรายชั่วโมง (Hourly Accident Trend)
               </h3>
               <span className="text-xs text-slate-400 font-mono">00:00 - 23:00</span>
@@ -813,7 +864,6 @@ function VisualizationsSection({ appData }) {
             <Chart options={hourlyChartOptions} series={hourlyChartSeries} type="area" height={260} />
           </div>
 
-          {/* กล่องสรุป 3 จังหวะ What -> So What -> Now What */}
           <InsightBox
             what="อุบัติเหตุสะสมหนาแน่นที่สุดช่วง 15:00-17:00 น. (17:00 น. สูงสุด 15,636 ครั้ง)"
             soWhat="ปริมาณรถหนาแน่นช่วงโรงเรียนและเลิกงาน ส่งผลให้เกิดการชนท้ายชะลอตัว"
@@ -826,7 +876,7 @@ function VisualizationsSection({ appData }) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span className="w-2 h-2 rounded-full bg-slate-600"></span>
                 รูปแบบการชน 5 อันดับแรก (Top 5 Collision Types)
               </h3>
               <span className="text-xs text-slate-400 font-mono">55,758 ชนท้ายสูงสุด</span>
@@ -866,7 +916,7 @@ function VisualizationsSection({ appData }) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span className="w-2 h-2 rounded-full bg-slate-600"></span>
                 5 ถนนเกิดเหตุสะสมสูงสุด (Top 5 Crash Corridors)
               </h3>
               <span className="text-xs text-slate-400 font-mono">Georgia Ave สูงสุด</span>
@@ -888,18 +938,18 @@ function VisualizationsSection({ appData }) {
 // ════════════════ INSIGHT BOX COMPONENT (What -> So What -> Now What) ════════════════
 function InsightBox({ what, soWhat, nowWhat }) {
   return (
-    <div className="mt-4 bg-slate-50/80 rounded-xl p-4 border border-slate-100 insight-box text-xs space-y-2">
+    <div className="mt-4 bg-slate-50/80 rounded-xl p-4 border border-slate-100 insight-box text-xs space-y-2.5">
       <div className="flex items-start gap-2">
-        <span className="px-1.5 py-0.5 rounded bg-slate-200 font-bold text-slate-700 flex-shrink-0 text-[10px]">
+        <span className="px-1.5 py-0.5 rounded bg-slate-200 font-bold text-slate-700 flex-shrink-0 text-[10px] tracking-wide">
           WHAT
         </span>
-        <p className="text-slate-700 leading-relaxed font-medium">
+        <p className="text-slate-800 leading-relaxed font-semibold">
           {what}
         </p>
       </div>
 
       <div className="flex items-start gap-2">
-        <span className="px-1.5 py-0.5 rounded bg-amber-100 font-bold text-amber-800 flex-shrink-0 text-[10px]">
+        <span className="px-1.5 py-0.5 rounded bg-amber-100 font-bold text-amber-800 flex-shrink-0 text-[10px] tracking-wide">
           SO WHAT
         </span>
         <p className="text-slate-600 leading-relaxed">
@@ -908,10 +958,10 @@ function InsightBox({ what, soWhat, nowWhat }) {
       </div>
 
       <div className="flex items-start gap-2">
-        <span className="px-1.5 py-0.5 rounded bg-emerald-100 font-bold text-emerald-800 flex-shrink-0 text-[10px]">
+        <span className="px-1.5 py-0.5 rounded bg-emerald-100 font-bold text-emerald-800 flex-shrink-0 text-[10px] tracking-wide">
           NOW WHAT
         </span>
-        <p className="text-slate-600 leading-relaxed font-medium text-emerald-900">
+        <p className="text-slate-700 leading-relaxed font-semibold text-emerald-950">
           {nowWhat}
         </p>
       </div>
@@ -945,13 +995,13 @@ function InteractiveExplorer({
           </p>
         </div>
 
-        <div className="text-xs text-slate-400 font-mono">
-          แสดง <span className="font-bold text-slate-700">{filteredIncidents.length}</span> จากทั้งหมด {totalCount} รายการ
+        <div className="text-xs text-slate-500 font-mono bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+          แสดง <span className="font-bold text-slate-900">{filteredIncidents.length}</span> จากทั้งหมด {totalCount} รายการ
         </div>
       </div>
 
       {/* แถบตัวกรอง (Filter Bar) */}
-      <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+      <div className="bg-slate-50/90 rounded-2xl p-4 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
         {/* Dropdown เลือกระดับความรุนแรง */}
         <div>
           <label className="block text-xs font-bold text-slate-600 mb-1.5">
@@ -960,7 +1010,7 @@ function InteractiveExplorer({
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs text-slate-700 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 outline-none transition font-medium"
+            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs text-slate-700 focus:border-slate-800 focus:ring-2 focus:ring-slate-200 outline-none transition font-medium cursor-pointer"
           >
             <option value="">ทั้งหมด (All Severities)</option>
             <option value="Fatal Injury">Fatal Injury (เสียชีวิต)</option>
@@ -971,7 +1021,7 @@ function InteractiveExplorer({
           </select>
         </div>
 
-        {/* ช่อง Input พิมพ์ค้นหาชื่อถนน (ค้นหาแบบ Real-time) */}
+        {/* ช่อง Input พิมพ์ค้นหาชื่อถนน */}
         <div>
           <label className="block text-xs font-bold text-slate-600 mb-1.5">
             ค้นหาชื่อถนน (Road Search)
@@ -983,8 +1033,17 @@ function InteractiveExplorer({
               value={roadSearch}
               onChange={(e) => setRoadSearch(e.target.value)}
               placeholder="พิมพ์ชื่อถนน เช่น Georgia, Rockville..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 bg-white text-xs text-slate-700 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 outline-none transition"
+              className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-300 bg-white text-xs text-slate-700 focus:border-slate-800 focus:ring-2 focus:ring-slate-200 outline-none transition"
             />
+            {roadSearch && (
+              <button
+                type="button"
+                onClick={() => setRoadSearch('')}
+                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 p-0.5 rounded-md"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -996,7 +1055,7 @@ function InteractiveExplorer({
           <select
             value={faultFilter}
             onChange={(e) => setFaultFilter(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs text-slate-700 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 outline-none transition font-medium"
+            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs text-slate-700 focus:border-slate-800 focus:ring-2 focus:ring-slate-200 outline-none transition font-medium cursor-pointer"
           >
             <option value="">All (ทั้งหมด)</option>
             <option value="Yes">Yes (กระทำผิด)</option>
@@ -1006,24 +1065,22 @@ function InteractiveExplorer({
 
         {/* ปุ่มรีเซ็ตตัวกรอง + ส่งออก CSV */}
         <div className="flex gap-2">
-          {/* ปุ่มรีเซ็ตตัวกรอง (Reset Filters) - ข้อบังคับ UX/UI */}
           <button
             type="button"
             onClick={onResetFilters}
-            className="flex-1 py-2 px-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 active:scale-95 text-xs font-bold text-slate-700 transition flex items-center justify-center gap-1.5 shadow-xs"
+            className="flex-1 py-2 px-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 active:scale-95 text-xs font-bold text-slate-700 transition duration-150 flex items-center justify-center gap-1.5 shadow-xs"
             title="คืนค่าตัวกรองทั้งหมด"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-            <span>รีเซ็ตตัวกรอง</span>
+            <span>รีเซ็ต</span>
           </button>
 
-          {/* ปุ่มส่งออก CSV (Export Data) */}
           <button
             type="button"
             onClick={onExportCSV}
             disabled={!filteredIncidents.length}
-            className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
-            title="ดาวน์โหลดไฟล์ CSV สำหรับข้อมูลที่กรองอยู่"
+            className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-xs font-bold transition duration-150 flex items-center justify-center gap-1.5 shadow-sm active:scale-95 btn-shimmer"
+            title="ดาวน์โหลดไฟล์ CSV"
           >
             <Download className="w-3.5 h-3.5" />
             <span>ส่งออก CSV</span>
@@ -1053,7 +1110,7 @@ function InteractiveExplorer({
                   row.injury_severity === 'Suspected Serious Injury';
 
                 return (
-                  <tr key={row.report_number} className="hover:bg-slate-50/80 transition">
+                  <tr key={row.report_number} className="hover:bg-slate-50/80 transition duration-100">
                     <td className="py-3 px-4 font-mono font-semibold text-slate-800">
                       {row.report_number}
                     </td>
@@ -1089,7 +1146,7 @@ function InteractiveExplorer({
                       <span
                         className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           row.driver_at_fault === 'Yes'
-                            ? 'bg-red-50 text-red-600 border border-red-200'
+                            ? 'bg-rose-50 text-rose-600 border border-rose-200'
                             : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                         }`}
                       >
@@ -1103,8 +1160,8 @@ function InteractiveExplorer({
           </table>
         </div>
       ) : (
-        /* สถานะข้อมูลไม่พบ (Empty State) */
-        <div className="py-16 text-center bg-slate-50/60 rounded-2xl border border-dashed border-slate-300 p-8 space-y-3">
+        /* Empty State */
+        <div className="py-16 text-center bg-slate-50/60 rounded-2xl border border-dashed border-slate-300 p-8 space-y-3 animate-fade-in">
           <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 shadow-inner">
             <Search className="w-8 h-8" />
           </div>
@@ -1117,7 +1174,7 @@ function InteractiveExplorer({
           <div className="pt-2">
             <button
               onClick={onResetFilters}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 text-white text-xs font-bold hover:bg-slate-900 transition shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition shadow-sm active:scale-95"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>ล้างตัวกรองทั้งหมด</span>
@@ -1134,9 +1191,9 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
   return (
     <section className="space-y-8 animate-fade-in">
       {/* Overview Banner */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 card-lift">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-700/80 text-emerald-400 text-xs font-semibold mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-800 text-emerald-400 text-xs font-semibold mb-2 border border-slate-700">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Data Governance & Compliance Passed</span>
           </div>
@@ -1148,7 +1205,7 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
           </p>
         </div>
 
-        <div className="flex gap-4 border-l border-slate-700/80 pl-6 text-center">
+        <div className="flex gap-4 border-l border-slate-750 pl-6 text-center">
           <div>
             <p className="text-xs text-slate-400 uppercase tracking-wider">สูญเสียข้อมูล</p>
             <p className="text-xl font-extrabold text-emerald-400 tabular-nums">0.87%</p>
@@ -1161,7 +1218,7 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
       </div>
 
       {/* ตารางที่ 1: Audit Trail Log */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 card-lift">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -1172,7 +1229,7 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
               ติดตามแถวข้อมูลคงเหลือและจุดที่ปรับปรุงในแต่ละลำดับขั้น
             </p>
           </div>
-          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
             5 ลำดับการประมวลผล
           </span>
         </div>
@@ -1229,7 +1286,7 @@ function DataAuditTab({ auditTrail = [], reconciliation = {} }) {
       </div>
 
       {/* ตารางที่ 2: Reconciliation Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 card-lift">
         <div>
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-slate-500"></span>
