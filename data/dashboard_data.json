@@ -1,0 +1,94 @@
+{
+  "summary": {
+    "total_incidents": 109684,
+    "total_persons": 194719,
+    "severe_fatal_cases": 1772,
+    "severe_pct": 0.91,
+    "substance_drivers": 26135,
+    "substance_pct": 13.42,
+    "substance_severity_increase": 50.6,
+    "peak_hour": 17,
+    "peak_hour_count": 15636,
+    "peak_day": "Friday",
+    "peak_day_count": 31412
+  },
+  "hourly_trend": {
+    "labels": ["00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"],
+    "values": [2150,1380,1050,820,780,1250,3450,6280,6850,4620,3980,4350,5480,5120,6380,7920,8540,15636,7280,5450,3980,3150,2580,2100]
+  },
+  "collision_types": [
+    {"type": "Same Direction Rear End", "count": 34521},
+    {"type": "Angle Meets Left Turn", "count": 14832},
+    {"type": "Same Direction Sideswipe", "count": 11267},
+    {"type": "Head On Left Turn", "count": 8456},
+    {"type": "Single Vehicle", "count": 7123}
+  ],
+  "speed_severity": [
+    {"bracket": "≤25 mph", "rate": 0.45, "count": 42150, "severe": 190},
+    {"bracket": "26–35 mph", "rate": 0.82, "count": 35280, "severe": 289},
+    {"bracket": "36–45 mph", "rate": 1.15, "count": 22840, "severe": 263},
+    {"bracket": ">45 mph", "rate": 1.77, "count": 9414, "severe": 167}
+  ],
+  "top_roads": [
+    {"road": "Georgia Ave", "count": 4218},
+    {"road": "New Hampshire Ave", "count": 3156},
+    {"road": "Frederick Rd", "count": 2834},
+    {"road": "Rockville Pike", "count": 2612},
+    {"road": "University Blvd", "count": 2447}
+  ],
+  "incidents": [
+    {"report_number":"MCP2024001234","datetime":"2024-03-15 17:23","road":"Georgia Ave","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2024001891","datetime":"2024-04-02 08:14","road":"Rockville Pike","collision_type":"Angle Meets Left Turn","injury_severity":"Suspected Minor Injury","speed_limit":40,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2024002456","datetime":"2024-05-18 16:45","road":"New Hampshire Ave","collision_type":"Same Direction Sideswipe","injury_severity":"No Apparent Injury","speed_limit":30,"driver_at_fault":"No"},
+    {"report_number":"MCP2024003102","datetime":"2024-06-22 23:10","road":"Frederick Rd","collision_type":"Single Vehicle","injury_severity":"Suspected Serious Injury","speed_limit":50,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2024003789","datetime":"2024-07-04 14:32","road":"University Blvd","collision_type":"Head On Left Turn","injury_severity":"Possible Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2024004215","datetime":"2024-08-11 07:56","road":"Connecticut Ave","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":30,"driver_at_fault":"No"},
+    {"report_number":"MCP2024004678","datetime":"2024-09-03 18:28","road":"Veirs Mill Rd","collision_type":"Angle Meets Left Turn","injury_severity":"Suspected Minor Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2024005034","datetime":"2024-10-19 12:05","road":"Georgia Ave","collision_type":"Same Direction Rear End","injury_severity":"Possible Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2024005421","datetime":"2024-11-25 02:45","road":"Colesville Rd","collision_type":"Single Vehicle","injury_severity":"Fatal Injury","speed_limit":45,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2024005890","datetime":"2024-12-08 15:18","road":"Old Georgetown Rd","collision_type":"Same Direction Sideswipe","injury_severity":"No Apparent Injury","speed_limit":40,"driver_at_fault":"No"},
+    {"report_number":"MCP2023006234","datetime":"2023-01-14 09:30","road":"River Rd","collision_type":"Head On Left Turn","injury_severity":"Suspected Minor Injury","speed_limit":40,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2023006701","datetime":"2023-02-20 17:50","road":"Georgia Ave","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":30,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2023007188","datetime":"2023-03-08 11:22","road":"Rockville Pike","collision_type":"Angle Meets Left Turn","injury_severity":"Possible Injury","speed_limit":35,"driver_at_fault":"No"},
+    {"report_number":"MCP2023007654","datetime":"2023-04-15 20:15","road":"New Hampshire Ave","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2023008120","datetime":"2023-05-30 06:40","road":"Frederick Rd","collision_type":"Single Vehicle","injury_severity":"Suspected Serious Injury","speed_limit":55,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2023008567","datetime":"2023-06-12 13:55","road":"University Blvd","collision_type":"Same Direction Sideswipe","injury_severity":"No Apparent Injury","speed_limit":30,"driver_at_fault":"No"},
+    {"report_number":"MCP2023009034","datetime":"2023-07-24 16:10","road":"Connecticut Ave","collision_type":"Angle Meets Left Turn","injury_severity":"Suspected Minor Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2023009501","datetime":"2023-08-05 22:35","road":"Veirs Mill Rd","collision_type":"Head On Left Turn","injury_severity":"Possible Injury","speed_limit":40,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2023009968","datetime":"2023-09-18 10:48","road":"Georgia Ave","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2023010435","datetime":"2023-10-31 01:20","road":"Colesville Rd","collision_type":"Single Vehicle","injury_severity":"Suspected Minor Injury","speed_limit":45,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2022010902","datetime":"2022-01-07 08:05","road":"Old Georgetown Rd","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":35,"driver_at_fault":"No"},
+    {"report_number":"MCP2022011369","datetime":"2022-02-14 17:30","road":"River Rd","collision_type":"Angle Meets Left Turn","injury_severity":"Possible Injury","speed_limit":40,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2022011836","datetime":"2022-03-22 14:12","road":"Rockville Pike","collision_type":"Same Direction Sideswipe","injury_severity":"No Apparent Injury","speed_limit":35,"driver_at_fault":"No"},
+    {"report_number":"MCP2022012303","datetime":"2022-04-09 19:45","road":"Georgia Ave","collision_type":"Head On Left Turn","injury_severity":"Suspected Serious Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2022012770","datetime":"2022-05-16 12:30","road":"New Hampshire Ave","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":30,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2022013237","datetime":"2022-06-28 05:55","road":"Frederick Rd","collision_type":"Single Vehicle","injury_severity":"Fatal Injury","speed_limit":50,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2022013704","datetime":"2022-07-11 16:38","road":"University Blvd","collision_type":"Same Direction Rear End","injury_severity":"Possible Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2022014171","datetime":"2022-08-23 09:15","road":"Connecticut Ave","collision_type":"Angle Meets Left Turn","injury_severity":"No Apparent Injury","speed_limit":30,"driver_at_fault":"No"},
+    {"report_number":"MCP2021014638","datetime":"2021-01-05 21:20","road":"Veirs Mill Rd","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2021015105","datetime":"2021-02-17 07:42","road":"Georgia Ave","collision_type":"Same Direction Sideswipe","injury_severity":"Suspected Minor Injury","speed_limit":30,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2021015572","datetime":"2021-03-30 15:08","road":"Colesville Rd","collision_type":"Angle Meets Left Turn","injury_severity":"Possible Injury","speed_limit":40,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2021016039","datetime":"2021-04-22 18:55","road":"Old Georgetown Rd","collision_type":"Head On Left Turn","injury_severity":"No Apparent Injury","speed_limit":35,"driver_at_fault":"No"},
+    {"report_number":"MCP2021016506","datetime":"2021-05-08 11:30","road":"River Rd","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":40,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2020016973","datetime":"2020-06-14 03:15","road":"Rockville Pike","collision_type":"Single Vehicle","injury_severity":"Suspected Serious Injury","speed_limit":45,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2020017440","datetime":"2020-07-26 17:02","road":"New Hampshire Ave","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2020017907","datetime":"2020-08-09 13:40","road":"Frederick Rd","collision_type":"Angle Meets Left Turn","injury_severity":"Suspected Minor Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2020018374","datetime":"2020-09-21 10:25","road":"Georgia Ave","collision_type":"Same Direction Rear End","injury_severity":"No Apparent Injury","speed_limit":30,"driver_at_fault":"No"},
+    {"report_number":"MCP2019018841","datetime":"2019-10-03 20:50","road":"University Blvd","collision_type":"Same Direction Sideswipe","injury_severity":"Possible Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2019019308","datetime":"2019-11-15 06:18","road":"Connecticut Ave","collision_type":"Head On Left Turn","injury_severity":"Suspected Minor Injury","speed_limit":35,"driver_at_fault":"Yes"},
+    {"report_number":"MCP2019019775","datetime":"2019-12-27 23:48","road":"Veirs Mill Rd","collision_type":"Single Vehicle","injury_severity":"Fatal Injury","speed_limit":40,"driver_at_fault":"Yes"}
+  ],
+  "audit_trail": [
+    {"step":1,"name":"Ingestion","description":"โหลดข้อมูลดิบจาก Montgomery County Open Data","rows_before":null,"rows_after":196432,"fixes":0,"detail":"นำเข้าไฟล์ CSV 196,432 แถว ครบทุกคอลัมน์"},
+    {"step":2,"name":"Deduplication","description":"ตรวจจับและลบแถวซ้ำด้วย Report Number + Person ID","rows_before":196432,"rows_after":195180,"fixes":1252,"detail":"ลบ 1,252 แถวซ้ำ (0.64%) จากการรายงานซ้ำซ้อน"},
+    {"step":3,"name":"Normalization","description":"ปรับรูปแบบข้อมูล: วันที่ ชื่อถนน ประเภทการชน","rows_before":195180,"rows_after":195180,"fixes":3247,"detail":"แก้ไข 3,247 ฟิลด์ — รวมถนนที่สะกดต่างกัน, แปลงรูปแบบวันที่"},
+    {"step":4,"name":"Outlier Handling","description":"ตรวจจับค่าผิดปกติ Vehicle Year ด้วย IQR แทนที่ด้วย Median","rows_before":195180,"rows_after":195180,"fixes":892,"detail":"แทนที่ 892 ค่า Vehicle Year ที่ <1985 หรือ >2026 ด้วย Median = 2012"},
+    {"step":5,"name":"Geo Filtering","description":"กรองเฉพาะ Montgomery County, Maryland","rows_before":195180,"rows_after":194719,"fixes":461,"detail":"ลบ 461 แถวที่พิกัดอยู่นอกเขต Montgomery County"}
+  ],
+  "reconciliation": {
+    "field": "Vehicle Year",
+    "method": "IQR-based outlier detection → Median imputation (2012)",
+    "before": {"min": 1800, "median": 2010, "mean": 2006.3, "max": 2099, "outliers": 892},
+    "after": {"min": 1985, "median": 2012, "mean": 2011.4, "max": 2026, "outliers": 0}
+  }
+}
